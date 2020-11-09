@@ -13,7 +13,7 @@ Hct   = 0.40;    % hematocrit (unitless)
 C0    = CHb*Hct; % blood oxygen binding capacity (mol/L)
 n     = 2.7;     % Hill exponent
 P50   = 30;      % half-max saturation of Hb
-beta  = 5.95e-5*1e-3; % O2 solubility in air (mmHg/mM)
+beta  = 16800*1e-3; % O2 solubility in air (mmHg/mM)
 
 Vp = 5; %ventilation flow (ml/s)
 Qp = 5; %blood flow (ml/s)
@@ -33,13 +33,14 @@ Cvasc = X(:,1);
 Pvasc = interp1(C,P,Cvasc);
 Palv  = X(:,2);
 
-pvasc_sim = fzero(@ModelB_FixedPoint_Objective,100,[],par,LOOK);
-palv_sim = (Vp*Pair+alpha*D*pvasc_sim)/(Vp+alpha*D);
+PSIM = fsolve(@ModelB_FixedPoint_Objective2,[100 100],[],par);
+pvasc_sim = PSIM(1);
+palv_sim  = PSIM(2);
 
 %%% grid for contour plot
 de = 0.1;
-q  = 0.1:de:10;
-v  = 0.1:de:10;
+q  = 0:de:10;
+v  = 0:de:10;
 np = length(q);
 [Q,V] = meshgrid(q,v);
 
@@ -50,11 +51,10 @@ FLAG = zeros(np);
 tic;
 for i = 1:np
    for j = 1:np
-       clear tpar
+       clear tpar P
        tpar = par; tpar(11) = v(i); tpar(12) = q(j);
-       [pvasc(i,j), ~, FLAG(i,j)] = fzero(@ModelB_FixedPoint_Objective,100,[],tpar,LOOK);
-      
-       palv(i,j)  = (v(i)*Pair+alpha*beta*D*pvasc(i,j))/(v(i)+alpha*beta*D);
+       [P, ~, FLAG(i,j)] = fsolve(@ModelB_FixedPoint_Objective2,[100 100],[],tpar);
+       pvasc(i,j) = P(1); palv(i,j)  = P(2);
        
        disp([i j])
    end
@@ -66,7 +66,10 @@ dpac  = palv - pvasc;
 
 %%% plots
 figure;
-plot(t,Pvasc,t,Palv)
+plot(t,Pvasc,t,Palv,'linewidth',2)
+xlabel('Time (s)')
+ylabel('Oxygen Tension (mmHg)')
+legend('Vasc', 'Alv')
 
 figure;
 surf(Q,V,pvasc, 'EdgeColor','none')
@@ -89,10 +92,13 @@ xlabel('q')
 ylabel('v')
 axis equal
 
+
+
+CON = -30:5:150;
 x = 0:10;
 figure;
 subplot(1,3,1)
-contour(Q,V,pvasc,'ShowText','on')
+contour(Q,V,pvasc,CON,'ShowText','on')
 hold on
 plot(x,x,'k--')
 hold on
@@ -106,7 +112,7 @@ grid on
 
 % figure;
 subplot(1,3,2)
-contour(Q,V,palv,'ShowText','on')
+contour(Q,V,palv,CON,'ShowText','on')
 hold on
 plot(x,x,'k--')
 hold on
@@ -114,13 +120,12 @@ plot(5,5,'rx')
 set(gca,'fontsize',18)
 title('Alveolar Space (mmHg)')
 xlabel('Cardiac Output (ml/s)')
-% ylabel('Ventilation Magnitude (ml/s)')
 axis equal
 grid on
 
 % figure;
 subplot(1,3,3)
-contour(Q,V,dpac,'ShowText','on')
+contour(Q,V,dpac,CON,'ShowText','on')
 hold on
 plot(x,x,'k--')
 hold on
@@ -128,7 +133,7 @@ plot(5,5,'rx')
 set(gca,'fontsize',18)
 title('Gradient (mmHg)')
 xlabel('Cardiac Output (ml/s)')
-% ylabel('Ventilation Magnitude (ml/s)')
 axis equal
 grid on
+
 

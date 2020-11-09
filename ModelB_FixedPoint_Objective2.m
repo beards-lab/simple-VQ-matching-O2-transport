@@ -1,4 +1,4 @@
-function OUT = ModelB_FixedPoint_Objective(Pv,par,LOOK)
+function OUT = ModelB_FixedPoint_Objective2(X,par)
 %%% this function defines the algebraic relationship to dolve for the the
 %%% fixed points in ModelB - intended to be numerically solved
 
@@ -15,10 +15,17 @@ P50   = par(10);
 V = par(11); %airflow (ml/s) 
 Q = par(12); %blood flow (ml/s)
 
+%%% variables
+Pv = X(1);
+Pa = X(2);
 
 %%% O2 interpolation for hemoglobin solubility
-P = LOOK.Plookup;
-C = LOOK.Clookup;
-Cin = interp1(P,C,Pin);
+Cin = alpha*Pin+C0*((Pin^n)/(Pin^n+P50^n));
+Cv = alpha*Pv+C0*((Pv^n)/(Pv^n+P50^n));
 
-OUT = Q*(Cin - alpha*Pv - C0*((Pv^n)/(Pv^n + P50^n))) + alpha*D*(((V*Pair + alpha*beta*D*Pv)/(V + alpha*beta*D)) - Pv);
+%%% function to minimize
+pvm = Q*(Cin - Cv) + alpha*D*(Pa - Pv);
+pam = V*(Pair - Pa) - alpha*beta*D*(Pa - Pv);
+
+
+OUT = [pvm; pam];
