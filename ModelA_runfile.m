@@ -18,7 +18,7 @@ q  = 0:de:10;
 v  = 0:de:10;
 [Q,V] = meshgrid(q,v);
 
-Dv = 10:-1:1;
+Dv = [1 2 3 4 5 6 7 8 9 10 100 1000 10000];
 Dpvasc = zeros(length(q),length(v),length(Dv));
 Dpalv  = zeros(length(q),length(v),length(Dv));
 
@@ -67,7 +67,7 @@ ylabel('v')
 axis equal
 
 
-CON = -30:5:200;
+CON = -30:10:150;
 x = 0:10;
 figure; % Contour Plot
 subplot(1,3,1)
