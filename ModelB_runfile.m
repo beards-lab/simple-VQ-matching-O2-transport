@@ -3,7 +3,7 @@ clear; close all; clc;
 %%% parameters
 D     = 30;      %apparent diffusion (ml/s)
 Pair  = 150;    %atmospheric oxygen partial pressure (mmHg)
-Pin   = 75;     %mixed venous oxygen partial pressure - pulmonary inlet (mmHg)
+Pin   = 45;     %mixed venous oxygen partial pressure - pulmonary inlet (mmHg)
 Vvasc = 1;      %volume of vascular space (ml)
 Valv  = 1;      %alveolar volume (ml)
 
@@ -44,24 +44,66 @@ v  = 0:de:10;
 np = length(q);
 [Q,V] = meshgrid(q,v);
 
+Dv = 0:1:100; %vector of diffusion parameters to explore
+Dpvasc = zeros(length(q),length(v),length(Dv));
+Dpalv  = zeros(length(q),length(v),length(Dv));
+
 % computing contour plot
+
+%preallocating cell arrays of parameters to run for-loops in parallel
+tpar{np,np} = [];
+for i = 1:np
+   for j = 1:np
+       tpar{i,j} = par;  tpar{i,j}(11) = v(i); tpar{i,j}(12) = q(j);
+   end
+end
+
 pvasc = zeros(np);
 palv  = zeros(np);
 FLAG = zeros(np);
 tic;
-for i = 1:np
+parfor i = 1:np
    for j = 1:np
-       clear tpar P
-       tpar = par; tpar(11) = v(i); tpar(12) = q(j);
-       [P, ~, FLAG(i,j)] = fsolve(@ModelB_FixedPoint_Objective2,[100 100],[],tpar);
+%        clear tpar P
+%        tpar = par; tpar(11) = v(i); tpar(12) = q(j);
+       [P, ~, FLAG(i,j)] = fsolve(@ModelB_FixedPoint_Objective2,[100 100],[],tpar{i,j});
        pvasc(i,j) = P(1); palv(i,j)  = P(2);
        
        disp([i j])
    end
 end
+dpac  = palv - pvasc;
 toc;
 
-dpac  = palv - pvasc;
+
+%preallocating cell arrays of parameters to run for-loops in parallel
+Dtpar{np,np,length(Dv)} = [];
+for k = 1:length(Dv)
+    for i = 1:np
+        for j = 1:np
+            Dtpar{i,j,k} = par;  Dtpar{i,j,k}(11) = v(i); Dtpar{i,j,k}(12) = q(j); Dtpar{i,j,k}(1) = Dv(k);
+        end
+    end
+end
+
+
+tic;
+DFLAG = zeros(np,np,np);
+parfor k = 1:length(Dv)
+    for i = 1:np
+        for j = 1:np
+%             clear tpar P
+%             tpar = par; tpar(11) = v(i); tpar(12) = q(j); tpar(1) = Dv(k);
+            [P, ~, DFLAG(i,j,k)] = fsolve(@ModelB_FixedPoint_Objective2,[100 100],[],Dtpar{i,j,k});
+            Dpvasc(i,j,k) = P(1); Dpalv(i,j,k)  = P(2);
+            
+            disp([i j k])
+        end
+    end
+end
+Ddpac  = Dpalv - Dpvasc;
+toc;
+
 
 
 %%% plots
@@ -136,4 +178,29 @@ xlabel('Cardiac Output (ml/s)')
 axis equal
 grid on
 
+
+
+%%% making gifs
+h = figure('units','normalized','outerposition',[0 0 1 1]);
+for i = 1:length(Dv) %iterate by size of Dv
+    %%%% make contour plots
+    cla(gca)
+    
+    contour(Q,V,squeeze(Dpvasc(:,:,i)),CON,'ShowText','on')
+    hold on
+    plot(x,x,'k--')
+    set(gca,'fontsize',18)
+    xlabel('Cardiac Output (ml/s)')
+    ylabel('Ventilation Magnitude (ml/s)')
+    text(9,1,['D = ', num2str(Dv(i))],'fontsize',18)
+    axis equal
+    grid on
+    
+    if i == 1
+        gif('ModelB.gif','DelayTime',1/15) %make gif file
+    else
+        gif %append frame to gif
+    end
+    disp(i)
+end
 
