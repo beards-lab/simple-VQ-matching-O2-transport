@@ -1,4 +1,6 @@
 function dX = ModelB_RHS(~,X,par,LOOK)
+% this function defines the kinetic right hand side of Model B to solved
+% with an ode solver
 
 %Paramaters
 D     = par(1); %apparent diffusion (ml/s)
@@ -21,8 +23,6 @@ P = LOOK.Plookup;
 C = LOOK.Clookup;
 Cin   = interp1(P,C,Pin);
 Pvasc = interp1(C,P,Cvasc);
-
-% Palv = beta*Malv/Valv;
 
 %%% RHS
 dCvasc = (Q*(Cin - Cvasc) + alpha*D*(Palv - Pvasc))./Vvasc;

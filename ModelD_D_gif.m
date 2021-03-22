@@ -1,4 +1,6 @@
 clear; close all; clc;
+% This script makes fun animated .gifs of Model D contour plots by varying
+% the apparent diffusion parameter
 
 %%% parameters
 D     = 50;      %apparent diffusion (ml/s)
@@ -81,7 +83,7 @@ for i = 1:length(Dv) %iterate by size of Dv
     grid on
     
     if i == 1
-        gif('ModelD_vasc.gif','DelayTime',1/15) %make gif file
+        gif('ModelD_vasc.gif','DelayTime',1/7) %make gif file
     else
         gif %append frame to gif
     end
@@ -104,7 +106,7 @@ for i = 1:length(Dv) %iterate by size of Dv
     grid on
     
     if i == 1
-        gif('ModelD_alv.gif','DelayTime',1/15) %make gif file
+        gif('ModelD_alv.gif','DelayTime',1/7) %make gif file
     else
         gif %append frame to gif
     end
@@ -127,7 +129,7 @@ for i = 1:length(Dv) %iterate by size of Dv
     grid on
     
     if i == 1
-        gif('ModelD_grad.gif','DelayTime',1/15) %make gif file
+        gif('ModelD_grad.gif','DelayTime',1/7) %make gif file
     else
         gif %append frame to gif
     end

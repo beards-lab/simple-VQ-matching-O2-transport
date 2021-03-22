@@ -1,4 +1,6 @@
 function [Pv,Pa,Cvi,Pvi,EPSv,dx] = modelD_SS_relaxation(N,par,P,C,Vp,Qp)
+%%% this function solves the steady state solutions of Model D by
+%%% numerically relaxing the system.
 
 %%% parameters
 D     = par(1);
@@ -35,6 +37,6 @@ end
 EPSv(1) = []; %delete first entry, as this is just 1 and not a real result
 
 Pvi = interp1(C,P,Cvi); %O2 pp along the capillary 
-Pv = Pvi(end); %steady state vascular O2
+Pv  = Pvi(end); %steady state vascular O2
 
 Pa = (Vp*Pair+alpha*beta*D*mean(Pvi))/(Vp+alpha*beta*D); %steady state alveolar O2

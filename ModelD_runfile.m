@@ -1,4 +1,5 @@
 clear; close all; clc;
+% This script solves Model D and saves results into a .mat file
 
 %%% parameters
 D     = 50;      %apparent diffusion (ml/s)
@@ -19,7 +20,9 @@ l     = 1; %length of capillary
 Vp = 5; %ventilation flow (ml/s)
 Qp = 5; %blood flow (ml/s)
 
-par = [D Pair Pin alpha beta l];
+load('ModelD_optimization_results.mat','D_opt')
+
+par = [D_opt Pair Pin alpha beta l];
 
 %%% look up table
 load('Lookup.mat') %outputs LOOK
@@ -29,9 +32,9 @@ C = LOOK.Clookup;
 N = 300; %number of grid points for numerical discretization
 
 %%% grid for contour plot
-de = 0.1;
-q  = 0:de:10;
-v  = 0:de:10;
+de = 0.5;
+q  = 0:de:70;
+v  = 0:de:70;
 [Q,V] = meshgrid(q,v);
 np = length(q); %number of points for air and blood flow to use
 
@@ -68,7 +71,7 @@ xlabel('q')
 ylabel('v')
 
 CON = -30:5:150;
-x = 0:10;
+x = 0:max(v);
 figure; % Contour Plot
 subplot(1,3,1)
 contour(Q,V,pvasc,CON,'ShowText','on')

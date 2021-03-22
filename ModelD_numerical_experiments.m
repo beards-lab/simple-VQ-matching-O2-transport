@@ -1,4 +1,6 @@
 clear; close all; clc;
+% This script runs Model D with a variety of inputs to test it's numerical
+% stability.
 
 %%% parameters
 D     = 130;      %apparent diffusion (ml/s)
@@ -65,6 +67,7 @@ ylabel('O_2 Tension (mmHg)')
 legend(num2str(N'))
 
 figure;
+subplot(1,2,1)
 for i = 1:nv
     hold on
     semilogy(EPSv{i},'linewidth',2)
@@ -73,12 +76,14 @@ set(gca,'fontsize',18,'yscale','log')
 xlabel('Iteration')
 ylabel('Error')
 legend(num2str(N'))
+ylim([1e-12 1e-2])
 
 Iter = zeros(1,nv);
 for i = 1:nv
     Iter(i) = length(EPSv{i});
 end
-figure;
+% figure;
+subplot(1,2,2)
 plot(N,Iter)
 xlabel('N - number of grid points')
 ylabel('Iterations for convergence')

@@ -1,7 +1,10 @@
 clear; close all; clc;
+% This script solves Model A and saves results into a .mat file + generates
+% fun animated .gifs to show how the diffusion parameter affects model
+% behavior
 
 %%% parameters
-D     = 30;      %apparent diffusion (ml/s)
+D     = 1000;      %apparent diffusion (ml/s)
 Pair  = 150;    %atmospheric oxygen partial pressure (mmHg)
 Pin   = 45;     %mixed venous oxygen partial pressure - pulmonary inlet (mmHg)
 Vvasc = 1;      %volume of vascular space (ml)
@@ -18,6 +21,9 @@ beta  = 16800*1e-3; % O2 solubility in air (mmHg/mM)
 Vp = 5; %ventilation flow (ml/s)
 Qp = 5; %blood flow (ml/s)
 
+load('ModelB_optimization_results.mat','D_opt')
+% D = D_opt;
+
 par = [D Pair Pin Vvasc Valv alpha beta C0 n P50 Vp Qp];
 
 %%% look up table
@@ -33,24 +39,25 @@ Cvasc = X(:,1);
 Pvasc = interp1(C,P,Cvasc);
 Palv  = X(:,2);
 
-PSIM = fsolve(@ModelB_FixedPoint_Objective2,[100 100],[],par);
+
+opt = optimset('MaxFUnEvals',20000);
+PSIM = fsolve(@ModelB_FixedPoint_Objective2,[100 100],opt,par);
 pvasc_sim = PSIM(1);
 palv_sim  = PSIM(2);
 
 %%% grid for contour plot
-de = 0.1;
-q  = 0:de:10;
-v  = 0:de:10;
+de = 0.5;
+q  = 0:de:70;
+v  = 0:de:70;
 np = length(q);
 [Q,V] = meshgrid(q,v);
 
-Dv = 0:1:100; %vector of diffusion parameters to explore
+Dv = 50; %0:1:100; %vector of diffusion parameters to explore
 Dpvasc = zeros(length(q),length(v),length(Dv));
 Dpalv  = zeros(length(q),length(v),length(Dv));
 
-% computing contour plot
-
-%preallocating cell arrays of parameters to run for-loops in parallel
+%%% computing contour plot
+% preallocating cell arrays of parameters to run for-loops in parallel
 tpar{np,np} = [];
 for i = 1:np
    for j = 1:np
@@ -66,7 +73,7 @@ parfor i = 1:np
    for j = 1:np
 %        clear tpar P
 %        tpar = par; tpar(11) = v(i); tpar(12) = q(j);
-       [P, ~, FLAG(i,j)] = fsolve(@ModelB_FixedPoint_Objective2,[100 100],[],tpar{i,j});
+       [P, ~, FLAG(i,j)] = fsolve(@ModelB_FixedPoint_Objective2,[100 100],opt,tpar{i,j});
        pvasc(i,j) = P(1); palv(i,j)  = P(2);
        
        disp([i j])
@@ -76,7 +83,7 @@ dpac  = palv - pvasc;
 toc;
 
 
-%preallocating cell arrays of parameters to run for-loops in parallel
+% preallocating cell arrays of parameters to run for-loops in parallel
 Dtpar{np,np,length(Dv)} = [];
 for k = 1:length(Dv)
     for i = 1:np
@@ -104,7 +111,7 @@ end
 Ddpac  = Dpalv - Dpvasc;
 toc;
 
-
+save('ModelB_results.mat')
 
 %%% plots
 figure;
@@ -135,9 +142,8 @@ ylabel('v')
 axis equal
 
 
-
 CON = -30:5:150;
-x = 0:10;
+x = 0:70;
 figure;
 subplot(1,3,1)
 contour(Q,V,pvasc,CON,'ShowText','on')
@@ -181,6 +187,8 @@ grid on
 
 
 %%% making gifs
+CON = -30:5:150;
+x = 0:10;
 h = figure('units','normalized','outerposition',[0 0 1 1]);
 for i = 1:length(Dv) %iterate by size of Dv
     %%%% make contour plots
@@ -197,7 +205,53 @@ for i = 1:length(Dv) %iterate by size of Dv
     grid on
     
     if i == 1
-        gif('ModelB.gif','DelayTime',1/15) %make gif file
+        gif('ModelB_vasc.gif','DelayTime',1/15) %make gif file
+    else
+        gif %append frame to gif
+    end
+    disp(i)
+end
+
+h2 = figure('units','normalized','outerposition',[0 0 1 1]);
+for i = 1:length(Dv) %iterate by size of Dv
+    %%%% make contour plots
+    cla(gca)
+    
+    contour(Q,V,squeeze(Dpalv(:,:,i)),CON,'ShowText','on')
+    hold on
+    plot(x,x,'k--')
+    set(gca,'fontsize',18)
+    xlabel('Cardiac Output (ml/s)')
+    ylabel('Ventilation Magnitude (ml/s)')
+    text(9,1,['D = ', num2str(Dv(i))],'fontsize',18)
+    axis equal
+    grid on
+    
+    if i == 1
+        gif('ModelB_alv.gif','DelayTime',1/15) %make gif file
+    else
+        gif %append frame to gif
+    end
+    disp(i)
+end
+
+h3 = figure('units','normalized','outerposition',[0 0 1 1]);
+for i = 1:length(Dv) %iterate by size of Dv
+    %%%% make contour plots
+    cla(gca)
+    
+    contour(Q,V,squeeze(Ddpac(:,:,i)),CON,'ShowText','on')
+    hold on
+    plot(x,x,'k--')
+    set(gca,'fontsize',18)
+    xlabel('Cardiac Output (ml/s)')
+    ylabel('Ventilation Magnitude (ml/s)')
+    text(9,1,['D = ', num2str(Dv(i))],'fontsize',18)
+    axis equal
+    grid on
+    
+    if i == 1
+        gif('ModelB_grad.gif','DelayTime',1/15) %make gif file
     else
         gif %append frame to gif
     end

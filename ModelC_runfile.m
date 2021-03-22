@@ -1,7 +1,10 @@
 clear; close all; clc;
+% This script solves Model A and saves results into a .mat file + generates
+% fun animated .gifs to show how the diffusion parameter affects model
+% behavior
 
 %%% parameters
-D     = 4;   %apparent diffusion (ml/s)
+D     = 10;   %apparent diffusion (ml/s)
 Pair  = 150; %atmospheric oxygen partial pressure (mmHg)
 Pin   = 45;  %mixed venous oxygen partial pressure - pulmonary inlet (mmHg)
 Vvasc = 1;   %volume of vascular space (ml)
@@ -10,12 +13,15 @@ Valv  = 1;   %alveolar volume (ml)
 Vp = 5; %ventilation flow (ml/s)
 Qp = 5; %blood flow (ml/s)
 
+% load('ModelC_optimization_results.mat','D_opt')
+% D = D_opt;
+
 par = [D Pair Pin Vvasc Valv Vp  Qp]; %parameters vector for ODE system
 
 %%% grid for contour plot
-de = 0.05;
-q  = 0:de:10;
-v  = 0:de:10;
+de = 0.5;
+q  = 0:de:70;
+v  = 0:de:70;
 [Q,V] = meshgrid(q,v);
 
 Dv = 0.1:0.1:10; %vector of diffusion parameters to explore
@@ -34,6 +40,8 @@ for j = 1:length(Dv)
     Dpvasc(:,:,j) = Dpalv(:,:,j) + (Pin-Dpalv(:,:,j)).*exp(-Dv(j)./Q);
     Ddpac(:,:,j)  = Dpalv(:,:,j) - Dpvasc(:,:,j);
 end
+
+save('ModelC_results.mat')
 
 figure;
 surf(Q,V,pvasc, 'EdgeColor','none')
@@ -58,7 +66,6 @@ xlabel('q')
 ylabel('v')
 % set(gca,'zscale','log')
 % axis equal
-
 
 CON = -30:5:150;
 x = 0:10;
@@ -179,6 +186,8 @@ grid on
 % grid on
 
 %%% making gifs
+CON = -30:5:150;
+x = 0:10;
 h = figure('units','normalized','outerposition',[0 0 1 1]);
 for i = 1:length(Dv) %iterate by size of Dv
     %%%% make contour plots
@@ -195,7 +204,53 @@ for i = 1:length(Dv) %iterate by size of Dv
     grid on
     
     if i == 1
-        gif('ModelC.gif','DelayTime',1/15) %make gif file
+        gif('ModelC_vasc.gif','DelayTime',1/15) %make gif file
+    else
+        gif %append frame to gif
+    end
+    disp(i)
+end
+
+h2 = figure('units','normalized','outerposition',[0 0 1 1]);
+for i = 1:length(Dv) %iterate by size of Dv
+    %%%% make contour plots
+    cla(gca)
+    
+    contour(Q,V,squeeze(Dpalv(:,:,i)),CON,'ShowText','on')
+    hold on
+    plot(x,x,'k--')
+    set(gca,'fontsize',18)
+    xlabel('Cardiac Output (ml/s)')
+    ylabel('Ventilation Magnitude (ml/s)')
+    text(9,1,['D = ', num2str(Dv(i))],'fontsize',18)
+    axis equal
+    grid on
+    
+    if i == 1
+        gif('ModelC_alv.gif','DelayTime',1/15) %make gif file
+    else
+        gif %append frame to gif
+    end
+    disp(i)
+end
+
+h3 = figure('units','normalized','outerposition',[0 0 1 1]);
+for i = 1:length(Dv) %iterate by size of Dv
+    %%%% make contour plots
+    cla(gca)
+    
+    contour(Q,V,squeeze(Ddpac(:,:,i)),CON,'ShowText','on')
+    hold on
+    plot(x,x,'k--')
+    set(gca,'fontsize',18)
+    xlabel('Cardiac Output (ml/s)')
+    ylabel('Ventilation Magnitude (ml/s)')
+    text(9,1,['D = ', num2str(Dv(i))],'fontsize',18)
+    axis equal
+    grid on
+    
+    if i == 1
+        gif('ModelC_grad.gif','DelayTime',1/15) %make gif file
     else
         gif %append frame to gif
     end
