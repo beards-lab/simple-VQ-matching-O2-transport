@@ -2,7 +2,7 @@ clear; close all; clc;
 % This script solves Model D and saves results into a .mat file
 
 %%% parameters
-D     = 50;      %apparent diffusion (ml/s)
+D     = 50;      %apparent diffusion (L/min)
 Pair  = 150;    %atmospheric oxygen partial pressure (mmHg)
 Pin   = 45;     %mixed venous oxygen partial pressure - pulmonary inlet (mmHg)
 Vvasc = 1;      %volume of vascular space (ml)
@@ -17,8 +17,8 @@ P50   = 30;      % half-max saturation of Hb
 beta  = 16800*1e-3; % O2 solubility in air (mmHg/mM)
 l     = 1; %length of capillary
 
-Vp = 5; %ventilation flow (ml/s)
-Qp = 5; %blood flow (ml/s)
+Vp = 5; %ventilation flow (L/min)
+Qp = 5; %blood flow (L/min)
 
 load('ModelD_optimization_results.mat','D_opt')
 
@@ -79,8 +79,8 @@ hold on
 plot(x,x,'k--')
 set(gca,'fontsize',18)
 title('Vascular (mmHg)')
-xlabel('Blood Flow (ml/s)')
-ylabel('Air Flow (ml/s)')
+xlabel('Blood Flow (L/min)')
+ylabel('Air Flow (L/min)')
 axis equal
 grid on
 
@@ -90,7 +90,7 @@ hold on
 plot(x,x,'k--')
 set(gca,'fontsize',18)
 title('Alveolar Space (mmHg)')
-xlabel('Blood Flow (ml/s)')
+xlabel('Blood Flow (L/min)')
 axis equal
 grid on
 
@@ -100,7 +100,7 @@ hold on
 plot(x,x,'k--')
 set(gca,'fontsize',18)
 title('Alv-Vasc Gradient (mmHg)')
-xlabel('Blood Flow (ml/s)')
+xlabel('Blood Flow (L/min)')
 axis equal
 grid on
 

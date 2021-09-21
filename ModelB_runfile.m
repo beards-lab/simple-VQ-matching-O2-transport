@@ -35,7 +35,7 @@ C = LOOK.Clookup;
 X0 = [interp1(P,C,Pin) Pin];
 [t,X] = ode15s(@ModelB_RHS,[0 10],X0,[],par,LOOK);
 
-Cvasc = X(:,1);
+Cvasc = X(:,1); 
 Pvasc = interp1(C,P,Cvasc);
 Palv  = X(:,2);
 

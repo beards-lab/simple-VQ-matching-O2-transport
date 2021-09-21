@@ -10,7 +10,7 @@ P50     = 30;      % half-max saturation of Hb
 DO      = 1;     % (apparent) O2 diffusion coefficient (ml/s)
 
 % O2 look up table (concetration to partial pressure conversion)
-Plookup = 0:1:200; %look up table
+Plookup = -200:1:200; %look up table
 Clookup = alpha*Plookup + C0*(Plookup.^n)./(Plookup.^n + P50.^n);
 
 SAT = (Plookup.^n)./(Plookup.^n + P50.^n);

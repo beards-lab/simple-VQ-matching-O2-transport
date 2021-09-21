@@ -4,14 +4,14 @@ clear; close all; clc;
 % behavior
 
 %%% parameters
-D     = 10;  %apparent diffusion (ml/s)
+D     = 50;  %apparent diffusion (L/min)
 Pair  = 150; %atmospheric oxygen partial pressure (mmHg)
 Pin   = 45;  %mixed venous oxygen partial pressure - pulmonary inlet (mmHg)
 Vvasc = 1;   %volume of vascular space (ml)
 Valv  = 1;   %alveolar volume (ml)
 
-Vp = 5; %ventilation flow (ml/s)
-Qp = 5; %blood flow (ml/s)
+Vp = 5; %ventilation flow (L/min)
+Qp = 5; %blood flow (L/min)
 
 % load('ModelA_optimization_results.mat','D_opt')
 % D = D_opt;
@@ -84,8 +84,8 @@ hold on
 plot(x,x,'k--')
 set(gca,'fontsize',18)
 title('Vascular (mmHg)')
-xlabel('Blood Flow (ml/s)')
-ylabel('Air FLow (ml/s)')
+xlabel('Blood Flow (L/min)')
+ylabel('Air Flow (L/min)')
 axis equal
 grid on
 
@@ -95,7 +95,7 @@ hold on
 plot(x,x,'k--')
 set(gca,'fontsize',18)
 title('Alveolar Space (mmHg)')
-xlabel('Blood Flow (ml/s)')
+xlabel('Blood Flow (L/min)')
 axis equal
 grid on
 
@@ -105,7 +105,7 @@ hold on
 plot(x,x,'k--')
 set(gca,'fontsize',18)
 title('Alv-Vasc Gradient (mmHg)')
-xlabel('Blood Flow (ml/s)')
+xlabel('Blood Flow (L/min)')
 axis equal
 grid on
 
@@ -204,8 +204,8 @@ for i = 1:length(Dv) %iterate by size of Dv
     hold on
     plot(x,x,'k--')
     set(gca,'fontsize',18)
-    xlabel('Cardiac Output (ml/s)')
-    ylabel('Ventilation Magnitude (ml/s)')
+    xlabel('Cardiac Output (L/min)')
+    ylabel('Ventilation Magnitude (L/min)')
     text(9,1,['D = ', num2str(Dv(i))],'fontsize',18)
     axis equal
     grid on
@@ -227,8 +227,8 @@ for i = 1:length(Dv) %iterate by size of Dv
     hold on
     plot(x,x,'k--')
     set(gca,'fontsize',18)
-    xlabel('Cardiac Output (ml/s)')
-    ylabel('Ventilation Magnitude (ml/s)')
+    xlabel('Cardiac Output (L/min)')
+    ylabel('Ventilation Magnitude (L/min)')
     text(9,1,['D = ', num2str(Dv(i))],'fontsize',18)
     axis equal
     grid on
@@ -250,8 +250,8 @@ for i = 1:length(Dv) %iterate by size of Dv
     hold on
     plot(x,x,'k--')
     set(gca,'fontsize',18)
-    xlabel('Cardiac Output (ml/s)')
-    ylabel('Ventilation Magnitude (ml/s)')
+    xlabel('Cardiac Output (L/min)')
+    ylabel('Ventilation Magnitude (L/min)')
     text(9,1,['D = ', num2str(Dv(i))],'fontsize',18)
     axis equal
     grid on

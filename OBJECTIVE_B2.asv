@@ -1,0 +1,26 @@
+function [J, Pv_m, r] = OBJECTIVE_B2(epar,par,DATA,FLAG)
+
+Pair  = par(1);
+alpha = par(2);
+beta  = par(3);
+a     = par(4);
+b     = par(5);
+k     = par(6);
+VO2M  = par(7);
+
+Q = DATA.CO;
+V = DATA.V;
+
+
+if 
+D    = epar(1);
+
+% Dn = epar(1) - exp(-epar(2)*Q);
+% Dn = D*Q;
+Dn = D;
+
+VO2 = -VO2M.*b.*Q./(100.*(a.*Q-VO2M));
+Pv_m = Pair - VO2.*(beta./V + 1/alpha./Dn)./k;
+
+r = DATA.PO2 - Pv_m;
+J = r'*r;
