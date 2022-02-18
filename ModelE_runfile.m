@@ -53,10 +53,11 @@ VO2_T = -VO2M.*b.*q_T./(100.*(a.*q_T-VO2M)); %target oxygen consumption
 D_2 = 1/(alpha*(k*(Pair-pv_T)/VO2_T - beta/v_T));
 
 % setting the parameter
-D = D_2;
+
+D = 6400;%D_1;
 
 %%% computing contour plot
-VO2 = -VO2M.*b.*Q./(100.*(a.*Q-VO2M));
+VO2 = -VO2M.*b.*Q./(a.*Q-VO2M);
 pvasc = Pair - VO2.*(beta./V + 1/alpha./D)./k;
 palv  = Pair-beta.*VO2./V./k ;
 dpac  = palv - pvasc;
@@ -89,7 +90,7 @@ dpac  = palv - pvasc;
 % Dpin = real(interp1(P,C,Dcin));
 % toc;
 
-save('ModelE_results.mat')
+save('ModelE_results.mat','Q','V','palv','pvasc','dpac')
 
 %%% plots
 xl = 40;

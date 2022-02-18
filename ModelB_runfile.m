@@ -4,7 +4,7 @@ clear; close all; clc;
 % behavior
 
 %%% parameters
-D     = 1000;      %apparent diffusion (ml/s)
+D     = 2200;      %apparent diffusion (ml/s)
 Pair  = 150;    %atmospheric oxygen partial pressure (mmHg)
 Pin   = 45;     %mixed venous oxygen partial pressure - pulmonary inlet (mmHg)
 Vvasc = 1;      %volume of vascular space (ml)
@@ -32,12 +32,12 @@ P = LOOK.Plookup;
 C = LOOK.Clookup;
 
 %%% solve system of ODEs
-X0 = [interp1(P,C,Pin) Pin];
-[t,X] = ode15s(@ModelB_RHS,[0 10],X0,[],par,LOOK);
-
-Cvasc = X(:,1); 
-Pvasc = interp1(C,P,Cvasc);
-Palv  = X(:,2);
+% X0 = [interp1(P,C,Pin) Pin];
+% [t,X] = ode15s(@ModelB_RHS,[0 10],X0,[],par,LOOK);
+% 
+% Cvasc = X(:,1); 
+% Pvasc = interp1(C,P,Cvasc);
+% Palv  = X(:,2);
 
 
 opt = optimset('MaxFUnEvals',20000);
@@ -114,11 +114,11 @@ toc;
 save('ModelB_results.mat')
 
 %%% plots
-figure;
-plot(t,Pvasc,t,Palv,'linewidth',2)
-xlabel('Time (s)')
-ylabel('Oxygen Tension (mmHg)')
-legend('Vasc', 'Alv')
+% figure;
+% plot(t,Pvasc,t,Palv,'linewidth',2)
+% xlabel('Time (s)')
+% ylabel('Oxygen Tension (mmHg)')
+% legend('Vasc', 'Alv')
 
 figure;
 surf(Q,V,pvasc, 'EdgeColor','none')

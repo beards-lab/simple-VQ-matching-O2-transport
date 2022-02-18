@@ -144,6 +144,8 @@ P50 = 30;      % half-max saturation of Hb
 
 PO2_data = P50./nthroot((1./SO2_data)-1,n);
 
+PO2_data = 125+0*PO2_data;
+
 %%% stacking things into a nicely packaged struct
 DATA.PO2 = PO2_data;
 DATA.CO  = CO_data;

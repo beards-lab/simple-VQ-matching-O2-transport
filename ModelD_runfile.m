@@ -2,7 +2,7 @@ clear; close all; clc;
 % This script solves Model D and saves results into a .mat file
 
 %%% parameters
-D     = 50;      %apparent diffusion (L/min)
+D     = 380;      %apparent diffusion (L/min)
 Pair  = 150;    %atmospheric oxygen partial pressure (mmHg)
 Pin   = 45;     %mixed venous oxygen partial pressure - pulmonary inlet (mmHg)
 Vvasc = 1;      %volume of vascular space (ml)
@@ -20,9 +20,10 @@ l     = 1; %length of capillary
 Vp = 5; %ventilation flow (L/min)
 Qp = 5; %blood flow (L/min)
 
-load('ModelD_optimization_results.mat','D_opt')
+% load('ModelD_optimization_results.mat','D_opt')
 
-par = [D_opt Pair Pin alpha beta l];
+
+par = [D Pair Pin alpha beta l];
 
 %%% look up table
 load('Lookup.mat') %outputs LOOK

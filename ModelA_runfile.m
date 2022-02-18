@@ -4,7 +4,7 @@ clear; close all; clc;
 % behavior
 
 %%% parameters
-D     = 50;  %apparent diffusion (L/min)
+D     = 500;  %apparent diffusion (L/min)
 Pair  = 150; %atmospheric oxygen partial pressure (mmHg)
 Pin   = 45;  %mixed venous oxygen partial pressure - pulmonary inlet (mmHg)
 Vvasc = 1;   %volume of vascular space (ml)
