@@ -89,6 +89,7 @@ loglog(DF,JF,DFp,JFp,'ro','linewidth',2,'markersize',7)
 title('Model F Cost')
 xlabel('D')
 set(gca,'fontsize',18)
+xlim([1e2 1e3])
 ylim(ylimv)
 
 %%%%
@@ -129,7 +130,7 @@ ylim([0 yl])
 
 subplot(3,4,9)
 contour(QA(:,1:81),VA(:,1:81),dpacA(:,1:81),CON2,'ShowText','on','linewidth',lw)
-contour(QA,VA,dpacA,CON,'ShowText','on','linewidth',lw)
+contour(QA,VA,dpacA,CON2,'ShowText','on','linewidth',lw)
 hold on
 plot(x,x,'k--','linewidth',lw)
 set(gca,'fontsize',18)
