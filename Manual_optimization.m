@@ -21,7 +21,7 @@ CHb   = 0.021*1e3;   % Hb binding site conc (mmol/L of RBC's)
 Hct   = 0.40;    % hematocrit (unitless)
 C0    = CHb*Hct; % blood oxygen binding capacity (mol/L)
 n     = 2.7;     % Hill exponent
-P50   = 30;      % half-max saturation of Hb
+P50   = 27;      % half-max saturation of Hb
 beta  = 16800*1e-3; % O2 solubility in air (mmHg/mM)
 l     = 1; %length of capillary
 
@@ -37,7 +37,7 @@ a = 0.105;
 b = 5.72;
 
 %%%% flags
-RFLAG = 0; %run flag (1 == run the stuff, 0 == don't run the stuff, but load and plot stuff)
+RFLAG = 1; %run flag (1 == run the stuff, 0 == don't run the stuff, but load and plot stuff)
 
 if RFLAG == 0
     load('Manual_optimization_results.mat')
@@ -113,7 +113,7 @@ elseif RFLAG == 1
 
     par = [D Pair Pin];
     for i = 1:length(DA)
-        JA(i) = OBJECTIVE_A(DA(i),par,DATA);
+        JA(i) = OBJECTIVE_A_v2(DA(i),par,DATA);
     end
     figure;
     loglog(DA,JA,'linewidth',2)
@@ -128,7 +128,7 @@ elseif RFLAG == 1
 
     par = [D Pair Pin Vvasc Valv alpha beta C0 n P50 Vp Qp];
     for i = 1:length(DB)
-        JB(i) = OBJECTIVE_B(DB(i),par,DATA);
+        JB(i) = OBJECTIVE_B_v2(DB(i),par,DATA);
     end
     figure;
     loglog(DB,JB,'linewidth',2)
@@ -143,7 +143,7 @@ elseif RFLAG == 1
 
     par = [D Pair Pin];
     for i = 1:length(DC)
-        JC(i) = OBJECTIVE_C(DC(i),par,DATA);
+        JC(i) = OBJECTIVE_C_v2(DC(i),par,DATA);
     end
     figure;
     loglog(DC,JC,'linewidth',2)
@@ -159,7 +159,7 @@ elseif RFLAG == 1
     par = [D Pair Pin alpha beta l];
     N = 300;
     for i = 1:length(DD)
-        JD(i) = OBJECTIVE_D(DD(i),par,P,C,DATA,N);
+        JD(i) = OBJECTIVE_D_v2(DD(i),par,P,C,DATA,N);
         disp(i)
     end
     figure;
@@ -175,7 +175,7 @@ elseif RFLAG == 1
 
     par = [Pair alpha beta a b k VO2M];
     for i = 1:length(DE)
-        JE(i) = OBJECTIVE_E(DE(i),par,DATA,0);
+        JE(i) = OBJECTIVE_E_v2(DE(i),par,DATA,0);
     end
     figure;
     loglog(DE,JE,'linewidth',2)
@@ -191,7 +191,7 @@ elseif RFLAG == 1
     par = [D Pair Pin alpha beta l a b k VO2M];
     N = 1000;
     for i = 1:length(DF)
-        JF(i) = OBJECTIVE_F(DF(i),par,P,C,DATA,N);
+        JF(i) = OBJECTIVE_F_v2(DF(i),par,P,C,DATA,N);
         disp(i)
     end
     figure;

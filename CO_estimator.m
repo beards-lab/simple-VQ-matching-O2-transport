@@ -140,11 +140,11 @@ CO_data = CO_W(W_data,4.5,par);
 
 %%% converting SO2 to partial pressure
 n   = 2.7;     % Hill exponent
-P50 = 30;      % half-max saturation of Hb
+P50 = 27;      % half-max saturation of Hb
 
 PO2_data = P50./nthroot((1./SO2_data)-1,n);
 
-PO2_data = 125+0*PO2_data;
+PO2_data = 110+0*PO2_data;
 
 %%% stacking things into a nicely packaged struct
 DATA.PO2 = PO2_data;

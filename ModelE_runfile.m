@@ -15,7 +15,7 @@ CHb   = 0.021*1e3;   % Hb binding site conc (mmol/L of RBC's)
 Hct   = 0.40;    % hematocrit (unitless)
 C0    = CHb*Hct; % blood oxygen binding capacity (mol/L)
 n     = 2.7;     % Hill exponent
-P50   = 30;      % half-max saturation of Hb
+P50   = 27;      % half-max saturation of Hb
 beta  = 16800*1e-3; % O2 solubility in air (mmHg/mM)
 
 Vp = 70; %ventilation flow (L/min)
@@ -37,24 +37,27 @@ v  = 0:de:Qp;
 np = length(q);
 [Q,V] = meshgrid(q,v);
 
-%%% Setting the diffusion parameter
-load('ModelE_optimization_results.mat','D_opt_0', 'D_opt_1')
-D_0 = D_opt_0;
-
-% assuming some kind of vascular recruitment where the apparent diffusion
-% increases as blood flow increases - D_opt is a unitless parameter here
-D_1 = D_opt_1*Q; 
-
-% estimation D algebraically to set Pv to a physiological value at baseline
-pv_T = 100; % target vascular oxygen tension
-v_T = 6; %target basal ventilation
-q_T = 5; %target basal blood flow
-VO2_T = -VO2M.*b.*q_T./(100.*(a.*q_T-VO2M)); %target oxygen consumption
-D_2 = 1/(alpha*(k*(Pair-pv_T)/VO2_T - beta/v_T));
+% %%% Setting the diffusion parameter
+% load('ModelE_optimization_results.mat','D_opt_0', 'D_opt_1')
+% D_0 = D_opt_0;
+% 
+% % assuming some kind of vascular recruitment where the apparent diffusion
+% % increases as blood flow increases - D_opt is a unitless parameter here
+% D_1 = D_opt_1*Q; 
+% 
+% % estimation D algebraically to set Pv to a physiological value at baseline
+% pv_T = 100; % target vascular oxygen tension
+% v_T = 6; %target basal ventilation
+% q_T = 5; %target basal blood flow
+% VO2_T = -VO2M.*b.*q_T./(100.*(a.*q_T-VO2M)); %target oxygen consumption
+% D_2 = 1/(alpha*(k*(Pair-pv_T)/VO2_T - beta/v_T));
 
 % setting the parameter
 
-D = 6400;%D_1;
+%load optimized diffusion (D) parameter
+load('ModelE_optimization_v2_results.mat','JE','DE')
+[~, jEpi] = min(JE); DEp = DE(jEpi);
+D = DEp;
 
 %%% computing contour plot
 VO2 = -VO2M.*b.*Q./(a.*Q-VO2M);

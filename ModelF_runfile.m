@@ -13,7 +13,7 @@ CHb   = 0.021*1e3;   % Hb binding site conc (mmol/L of RBC's)
 Hct   = 0.40;    % hematocrit (unitless)
 C0    = CHb*Hct; % blood oxygen binding capacity (mol/L)
 n     = 2.7;     % Hill exponent
-P50   = 30;      % half-max saturation of Hb
+P50   = 27;      % half-max saturation of Hb
 beta  = 16800*1e-3; % O2 solubility in air (mmHg/mM)
 l     = 1; %length of capillary
 
@@ -28,11 +28,12 @@ k = 2.5;%conversion factor to convert O2 content (ml O2/100ml blood) to concentr
 a = 0.105;
 b = 5.72;
 
-% load('ModelF_optimization_results.mat','D_opt')
+%load optimized diffusion (D) parameter
+load('ModelF_optimization_v2_results.mat','JF','DF')
+[~, jFpi] = min(JF); DFp = DF(jFpi);
+D = DFp;
 
-D_opt = 536.36; %650; %just guessing based on shape of cost function
-
-par = [D_opt Pair Pin alpha beta l a b k VO2M];
+par = [D Pair Pin alpha beta l a b k VO2M];
 
 %%% look up table
 load('Lookup.mat') %outputs LOOK

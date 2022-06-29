@@ -18,7 +18,7 @@ CHb   = 0.021*1e3;   % Hb binding site conc (mmol/L of RBC's)
 Hct   = 0.40;    % hematocrit (unitless)
 C0    = CHb*Hct; % blood oxygen binding capacity (mol/L)
 n     = 2.7;     % Hill exponent
-P50   = 30;      % half-max saturation of Hb
+P50   = 27;      % half-max saturation of Hb
 beta  = 16800*1e-3; % O2 solubility in air (mmHg/mM)
 l     = 1; %length of capillary
 
@@ -35,14 +35,12 @@ b = 5.72;
 
 % load('ModelD2_optimization_results.mat','D_opt')
 
-par = [D Pair Pin alpha beta l a b k VO2M];
+% par = [D Pair Pin alpha beta l a b k VO2M];
 
 %%% look up table
 load('Lookup.mat') %outputs LOOK
 Plook = LOOK.Plookup;
 Clook = LOOK.Clookup;
-
-N = 1000; %number of grid points for numerical discretization
 
 %%% testing that this janky cost function works
 % [JT, JV, JQ, vt, qt] = OBJECTIVE_F_v2(D,par,DATA,Plook,Clook,N);
@@ -59,7 +57,7 @@ DF = linspace(450,1000,100);
 JF = zeros(length(DF),1);
 
 par = [D Pair Pin alpha beta l a b k VO2M];
-N = 1000;
+N = 500;
 for i = 1:length(DF)
     JF(i) = OBJECTIVE_F_v2(DF(i),par,DATA,Plook,Clook,N);
     disp(i)

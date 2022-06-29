@@ -15,14 +15,16 @@ CHb   = 0.021*1e3;   % Hb binding site conc (mmol/L of RBC's)
 Hct   = 0.40;    % hematocrit (unitless)
 C0    = CHb*Hct; % blood oxygen binding capacity (mol/L)
 n     = 2.7;     % Hill exponent
-P50   = 30;      % half-max saturation of Hb
+P50   = 27;      % half-max saturation of Hb
 beta  = 16800*1e-3; % O2 solubility in air (mmHg/mM)
 
 Vp = 5; %ventilation flow (ml/s)
 Qp = 5; %blood flow (ml/s)
 
-load('ModelB_optimization_results.mat','D_opt')
-% D = D_opt;
+%load optimized diffusion (D) parameter
+load('ModelB_optimization_v2_results.mat','JB','DB')
+[~, jBpi] = min(JB); DBp = DB(jBpi);
+D = DBp;
 
 par = [D Pair Pin Vvasc Valv alpha beta C0 n P50 Vp Qp];
 
@@ -186,75 +188,75 @@ grid on
 
 
 
-%%% making gifs
-CON = -30:5:150;
-x = 0:10;
-h = figure('units','normalized','outerposition',[0 0 1 1]);
-for i = 1:length(Dv) %iterate by size of Dv
-    %%%% make contour plots
-    cla(gca)
-    
-    contour(Q,V,squeeze(Dpvasc(:,:,i)),CON,'ShowText','on')
-    hold on
-    plot(x,x,'k--')
-    set(gca,'fontsize',18)
-    xlabel('Cardiac Output (ml/s)')
-    ylabel('Ventilation Magnitude (ml/s)')
-    text(9,1,['D = ', num2str(Dv(i))],'fontsize',18)
-    axis equal
-    grid on
-    
-    if i == 1
-        gif('ModelB_vasc.gif','DelayTime',1/15) %make gif file
-    else
-        gif %append frame to gif
-    end
-    disp(i)
-end
-
-h2 = figure('units','normalized','outerposition',[0 0 1 1]);
-for i = 1:length(Dv) %iterate by size of Dv
-    %%%% make contour plots
-    cla(gca)
-    
-    contour(Q,V,squeeze(Dpalv(:,:,i)),CON,'ShowText','on')
-    hold on
-    plot(x,x,'k--')
-    set(gca,'fontsize',18)
-    xlabel('Cardiac Output (ml/s)')
-    ylabel('Ventilation Magnitude (ml/s)')
-    text(9,1,['D = ', num2str(Dv(i))],'fontsize',18)
-    axis equal
-    grid on
-    
-    if i == 1
-        gif('ModelB_alv.gif','DelayTime',1/15) %make gif file
-    else
-        gif %append frame to gif
-    end
-    disp(i)
-end
-
-h3 = figure('units','normalized','outerposition',[0 0 1 1]);
-for i = 1:length(Dv) %iterate by size of Dv
-    %%%% make contour plots
-    cla(gca)
-    
-    contour(Q,V,squeeze(Ddpac(:,:,i)),CON,'ShowText','on')
-    hold on
-    plot(x,x,'k--')
-    set(gca,'fontsize',18)
-    xlabel('Cardiac Output (ml/s)')
-    ylabel('Ventilation Magnitude (ml/s)')
-    text(9,1,['D = ', num2str(Dv(i))],'fontsize',18)
-    axis equal
-    grid on
-    
-    if i == 1
-        gif('ModelB_grad.gif','DelayTime',1/15) %make gif file
-    else
-        gif %append frame to gif
-    end
-    disp(i)
-end
+% %%% making gifs
+% CON = -30:5:150;
+% x = 0:10;
+% h = figure('units','normalized','outerposition',[0 0 1 1]);
+% for i = 1:length(Dv) %iterate by size of Dv
+%     %%%% make contour plots
+%     cla(gca)
+%     
+%     contour(Q,V,squeeze(Dpvasc(:,:,i)),CON,'ShowText','on')
+%     hold on
+%     plot(x,x,'k--')
+%     set(gca,'fontsize',18)
+%     xlabel('Cardiac Output (ml/s)')
+%     ylabel('Ventilation Magnitude (ml/s)')
+%     text(9,1,['D = ', num2str(Dv(i))],'fontsize',18)
+%     axis equal
+%     grid on
+%     
+%     if i == 1
+%         gif('ModelB_vasc.gif','DelayTime',1/15) %make gif file
+%     else
+%         gif %append frame to gif
+%     end
+%     disp(i)
+% end
+% 
+% h2 = figure('units','normalized','outerposition',[0 0 1 1]);
+% for i = 1:length(Dv) %iterate by size of Dv
+%     %%%% make contour plots
+%     cla(gca)
+%     
+%     contour(Q,V,squeeze(Dpalv(:,:,i)),CON,'ShowText','on')
+%     hold on
+%     plot(x,x,'k--')
+%     set(gca,'fontsize',18)
+%     xlabel('Cardiac Output (ml/s)')
+%     ylabel('Ventilation Magnitude (ml/s)')
+%     text(9,1,['D = ', num2str(Dv(i))],'fontsize',18)
+%     axis equal
+%     grid on
+%     
+%     if i == 1
+%         gif('ModelB_alv.gif','DelayTime',1/15) %make gif file
+%     else
+%         gif %append frame to gif
+%     end
+%     disp(i)
+% end
+% 
+% h3 = figure('units','normalized','outerposition',[0 0 1 1]);
+% for i = 1:length(Dv) %iterate by size of Dv
+%     %%%% make contour plots
+%     cla(gca)
+%     
+%     contour(Q,V,squeeze(Ddpac(:,:,i)),CON,'ShowText','on')
+%     hold on
+%     plot(x,x,'k--')
+%     set(gca,'fontsize',18)
+%     xlabel('Cardiac Output (ml/s)')
+%     ylabel('Ventilation Magnitude (ml/s)')
+%     text(9,1,['D = ', num2str(Dv(i))],'fontsize',18)
+%     axis equal
+%     grid on
+%     
+%     if i == 1
+%         gif('ModelB_grad.gif','DelayTime',1/15) %make gif file
+%     else
+%         gif %append frame to gif
+%     end
+%     disp(i)
+% end
 

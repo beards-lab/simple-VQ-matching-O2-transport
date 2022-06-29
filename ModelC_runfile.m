@@ -13,8 +13,10 @@ Valv  = 1;   %alveolar volume (ml)
 Vp = 5; %ventilation flow (ml/s)
 Qp = 5; %blood flow (ml/s)
 
-% load('ModelC_optimization_results.mat','D_opt')
-% D = D_opt;
+%load optimized diffusion (D) parameter
+load('ModelC_optimization_v2_results.mat','JC','DC')
+[~, jCpi] = min(JC); DCp = DC(jCpi);
+D = DCp;
 
 par = [D Pair Pin Vvasc Valv Vp  Qp]; %parameters vector for ODE system
 
