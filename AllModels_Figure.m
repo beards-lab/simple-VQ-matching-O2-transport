@@ -97,10 +97,10 @@ ylim(ylimv)
 CON = 10:10:150;
 CON2 = 0:5:150;
 CONfit = 110;
-x = 0:70;
+x = 0:20;
 
-xl = 40;
-yl = 70;
+xl = 20;
+yl = 40;
 lw = 1.5;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Models A-D
@@ -115,7 +115,8 @@ ylabel('Air Flow (L/min)')
 xlim([0 xl])
 ylim([0 yl])
 
-subplot(3,4,5)
+subplot(3,4,5);
+cla;
 contour(QA,VA,pvascA,CON,'ShowText','on','linewidth',lw)
 hold on
 plot(x,x,'k--','linewidth',lw)
