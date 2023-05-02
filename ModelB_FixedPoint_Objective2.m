@@ -1,4 +1,4 @@
-function OUT = ModelB_FixedPoint_Objective2(X,par)
+function [OUT c]     = ModelB_FixedPoint_Objective2(X,par)
 %%% this function defines the algebraic relationship to dolve for the the
 %%% fixed points in ModelB - intended to be numerically solved with fsolve
 
@@ -22,9 +22,12 @@ Pa = X(2);
 %%% O2 interpolation for hemoglobin solubility
 Cin = alpha*Pin+C0*((Pin^n)/(Pin^n+P50^n));
 Cv = alpha*Pv+C0*((Pv^n)/(Pv^n+P50^n));
+% Ca = alpha*Pa+C0*((Pa^n)/(Pa^n+P50^n));
 
 %%% function to minimize
 pvm = Q*(Cin - Cv) + alpha*D*(Pa - Pv);
 pam = V*(Pair - Pa) - alpha*beta*D*(Pa - Pv);
 
 OUT = [pvm; pam];
+% c = [Cin, Cv, Ca];
+c = [Cin, Cv];
