@@ -6,32 +6,6 @@ qrs = CO/N + CO/10*randn(N, 1)/N;% random flow set
 
 histogram(qrs);
 
-%% get all the param shift tigerther
-
-%%% parameters
-D     = 2200;      %apparent diffusion (ml/s)
-Pair  = 150;    %atmospheric oxygen partial pressure (mmHg)
-Pin   = 45;     %mixed venous oxygen partial pressure - pulmonary inlet (mmHg)
-Vvasc = 1;      %volume of vascular space (ml)
-Valv  = 1;      %alveolar volume (ml)
-
-alpha = 1.3e-6*1e3;  % O2 solubility  in water/plasma(mM/mmHg)
-CHb   = 0.021*1e3;   % Hb binding site conc (mmol/L of RBC's)
-Hct   = 0.40;    % hematocrit (unitless)
-C0    = CHb*Hct; % blood oxygen binding capacity (mol/L)
-n     = 2.7;     % Hill exponent
-P50   = 27;      % half-max saturation of Hb
-beta  = 16800*1e-3; % O2 solubility in air (mmHg/mM)
-
-Vp = 5; %ventilation flow (ml/s)
-Qp = 5; %blood flow (ml/s)
-
-%load optimized diffusion (D) parameter
-load('ModelB_optimization_v2_results.mat','JB','DB')
-[~, jBpi] = min(JB); DBp = DB(jBpi);
-D = DBp;
-
-par = [D Pair Pin Vvasc Valv alpha beta C0 n P50 Vp Qp];
 %% Test Hb dissociation look up table
 
 HbLookUp = load('Lookup.mat'); %outputs Hb dissociation curve lookup table
@@ -65,6 +39,7 @@ if drawPlots
     % subplot(133);hold on;
 end
 
+%% Prepare inputs
 CO = 3:0.5:20;
 Vp = 3:0.5:20;
 % CO = 5;
@@ -74,7 +49,35 @@ Vps = 5; % Ventilation snapshot
 Padist = zeros(length(CO), length(Vp));
 Pc = zeros(length(CO), length(Vp));
 
-%
+%% get all the param shift tigerther
+
+%%% parameters
+D     = 2200;      %apparent diffusion (ml/s)
+Pair  = 150;    %atmospheric oxygen partial pressure (mmHg)
+Pin   = 45;     %mixed venous oxygen partial pressure - pulmonary inlet (mmHg)
+Vvasc = 1;      %volume of vascular space (ml)
+Valv  = 1;      %alveolar volume (ml)
+
+alpha = 1.3e-6*1e3;  % O2 solubility  in water/plasma(mM/mmHg)
+CHb   = 0.021*1e3;   % Hb binding site conc (mmol/L of RBC's)
+Hct   = 0.40;    % hematocrit (unitless)
+C0    = CHb*Hct; % blood oxygen binding capacity (mol/L)
+n     = 2.7;     % Hill exponent
+P50   = 27;      % half-max saturation of Hb
+beta  = 16800*1e-3; % O2 solubility in air (mmHg/mM)
+
+Vp = 5; %ventilation flow (ml/s)
+Qp = 5; %blood flow (ml/s)
+
+%load optimized diffusion (D) parameter
+load('ModelB_optimization_v2_results.mat','JB','DB')
+[~, jBpi] = min(JB); DBp = DB(jBpi);
+D = DBp;
+
+par = [D Pair Pin Vvasc Valv alpha beta C0 n P50 Vp Qp];
+
+%% Run ModelB eval
+
 opt = optimset('MaxFUnEvals',100, 'Display', 'None');
 for iq = 1:length(CO) % iterate flow
     disp("Jedu " + num2str(round(iq/length(CO)*100)))
@@ -104,11 +107,29 @@ for iq = 1:length(CO) % iterate flow
         if drawPlots && CO(iq) == Qs && Vp(iv) == Vps, 
             subplot(131); histogram(rnd, N/10, "EdgeAlpha",0.2);
             subplot(132); histogram(p); 
-            Ps = Padist(iq, iv);
+            Pds = p; % PO2 distribution snapshot
+            Qds = qrs; % flow distribution snapshot
+            Ps = Padist(iq, iv); %
         end
     end
 end
-%%
+%% save results
+DistributedModelB.CO = CO; % cardiac output
+DistributedModelB.Vp = Vp; % ventilation
+DistributedModelB.Pv = Padist; % PO2 in pulmonary veins
+DistributedModelB.Pvds = Pds; % PO2 in pulmonary veins - snapshot of distribution at Qs and Vps
+DistributedModelB.Qds = Qds; % flow distribtiuon snapshot
+DistributedModelB.Vps = Vps; % ventilation snapshot
+
+save(DistributedModelB, 'DistributedModelB', '-mat');
+%% load results
+clear;
+dmb = load(DistributedModelB);
+CO = dbm.CO;
+Vp = dbm.Vp;
+Padist = dbm.Pv;
+
+
 subplot(133); cla;hold on;
 [X Y] = meshgrid(CO, Vp);
 contour(X, Y, Padist', '--', 'ShowText','on');
