@@ -22,13 +22,18 @@ end
 % plot(HbDisP, HbDisC, HbDisP, Ceq, '--', Pvdist, Cx, 'x-', 'Linewidth', 2);
 
 %% prepare random distribution
-N = 50;
+N = 100;
 SD = 2e-1;
 rng(3); % set the random generator seed 
-rnd = SD*randn(N, 1) + 1;
+rnd = SD*randn(N, 1) + 1; % random vector for flows
 rnd = rnd(find(rnd > 0)); % select only non-zero flows
 rnd = (rnd) / mean(rnd); % rescale to match total flow
-clf;plot(rnd, '.')
+
+rnd2 = SD*randn(N, 1) + 1; % random vector for ventilation
+rnd2 = rnd2(find(rnd2 > 0)); % select only non-zero ventilation
+rnd2 = (rnd2) / mean(rnd2); % rescale to match total ventilation
+
+clf;plot(rnd, rnd2, '.'); xlabel('Q');ylabel('V');
 % histogram(rnd, N/10)
 % subplot(121);histogram(rnd, 'FaceAlpha',0.2);
 % run CO x V scan for distributed alveoli
@@ -52,7 +57,8 @@ Vp = 3:1:20;
 Qs = 5; % flow snapshot
 Vps = 5; % Ventilation snapshot
 
-filename = sprintf("Data/DistributedModel_SD_%1.1e.mat", SD)
+% filename = sprintf("Data/DistributedModel_SD_%1.1e.mat", SD)
+filename = sprintf("Data/DistributedModelQV_SD_%1.1e.mat", SD)
 
 %% get all the param shift tigerther
 
@@ -114,8 +120,8 @@ parfor iq = COEl % iterate flow
     Cvi = 0;Pvi = 0;
 
     for iv = VpEl % iterate ventilation
-        vrs = Vp(iv)/N *rnd; % ventilation random set
-        vrs = ones(size(qrs))*Vp(iv)/N; % start simple - equal ventilation
+        vrs = Vp(iv)/N *rnd2; % ventilation random set
+        % vrs = ones(size(qrs))*Vp(iv)/N; % start simple - equal ventilation
         
         % equal Q and Vp in all alveoli
         par(1) = D;
@@ -142,6 +148,7 @@ parfor iq = COEl % iterate flow
             snapshot = struct();
             snapshot.Pds = p; % PO2 distribution snapshot
             snapshot.Qds = qrs; % flow distribution snapshot
+            snapshot.Vds = vrs; % ventilation distribution snapshot
             snapshot.Cds = c;
             snapshot.Pvs = Pvdist(iq, iv); % venous pO2 snapshot
             snapshot.PvNds = pv; % venous pO2 non-distributed snapshot
@@ -161,7 +168,8 @@ DMR.snap = load('Data\snapshot.mat').snap; % paralel for snapshot
 
 save(filename, "DMR");
 %% load results
-% clear;figure(1);clf;
+% clear;
+figure(1);clf;
 DMR = load(filename).DMR; % distributed model results
 
 % DMR = load("Data/DistributedModel_SD_0.mat").DMR; % distributed model results
@@ -173,9 +181,25 @@ DMR = load(filename).DMR; % distributed model results
 % DMR.snap.Pvs = DMR.snap.Ps;
 % subplot(131); histogram(dmr.snap.Qds, N, "EdgeAlpha",0.2);
 % subplot(132); histogram(dmr.snap.Pds, N); 
-subplot(131); plot(DMR.snap.Qds,1:numel(DMR.snap.Qds), 'x');
-subplot(132); plot(DMR.snap.Pds,1:numel(DMR.snap.Qds), 'x'); 
-subplot(133); cla;hold on;
+subplot(231); cla; hold on;
+plot(DMR.snap.Qds,DMR.snap.Vds, 'x');
+title(['Blood flow distribution in alveoli, Q_{total} = ' num2str(round(sum(DMR.snap.Qds), 2)) ' L/min']);
+xlabel('Q');ylabel('V');
+Qsm = mean(DMR.snap.Qds);
+Vsm = mean(DMR.snap.Vds);
+plot([Qsm Qsm], [min(DMR.snap.Vds) max(DMR.snap.Vds)], 'r--')
+plot([min(DMR.snap.Qds) max(DMR.snap.Qds)], [Vsm Vsm], 'r--')
+
+subplot(232); cla;hold on;
+% plot(DMR.snap.Pds,1:numel(DMR.snap.Qds), 'x'); 
+histogram(DMR.snap.Pds, N/10);
+title(['Partial pressure in distributed alveoli, Pa = ' num2str(round(DMR.snap.Pvs, 2))]);
+plot([DMR.snap.PvNds DMR.snap.PvNds], [0 max(ylim)], 'k:')
+plot([DMR.snap.Pvs DMR.snap.Pvs], [0 max(ylim)], 'r--')
+legend('Capillary pO2', '1 comp pO2', 'dist venous pO2')
+xlabel('P_{O2}');ylabel('Count in category');
+
+subplot(233); cla;hold on;
 [X Y] = meshgrid(DMR.CO, DMR.Vp);
 % surf(X, Y, DMR.Pv');
 contour(X, Y, DMR.pVascND', '--', 'ShowText','on', 'LineWidth',2);
@@ -185,22 +209,10 @@ xlabel('CO L/min');
 ylabel('V (L/min)');
 zlabel('P_O2 (mmHg)');
 colorbar
-view(2)
-% titles and stuff
+% view(2)
 
-subplot(131); title(['Blood flow distribution in alveoli, Q_{total} = ' num2str(round(sum(DMR.snap.Qds), 2)) ' L/min']);
-xlabel('Q');ylabel('Count in category');
-Qs = sum(DMR.snap.Qds); hold on;
-plot([Qs Qs]./numel(DMR.snap.Qds), [0 max(ylim)], 'r--')
-subplot(132); title(['Partial pressure in distributed alveoli, Pa = ' num2str(round(DMR.snap.Pvs, 2))]);
-hold on;
-plot([DMR.snap.PvNds DMR.snap.PvNds], [0 max(ylim)], 'k:')
-plot([DMR.snap.Pvs DMR.snap.Pvs], [0 max(ylim)], 'r--')
-legend('Capillary pO2', 'venous pO2', '1comp pO2')
-xlabel('P_{O2}');ylabel('Count in category');
-% disp(['SD ' num2str(SD) ', P_{O2, a} = ' num2str(round(DMR.snap.(end), 2)) ' mmHg']);
-%% PLot surf
-subplot(234);cla;hold on;
+% PLot surf
+subplot(223);cla;hold on;
 surf(X, Y, DMR.pVascND', 'LineStyle','--', 'LineWidth',1);
 surf(X, Y, DMR.Pv', 'LineStyle','-', 'LineWidth',1);
 xlabel('CO L/min');
@@ -210,16 +222,18 @@ colorbar
 % view(2)
 legend('Distributed', 'Single comp')
 
-
-%% plot Px
+% plot Px
 % figure(3);clf;hold on;
-subplot(235);cla;hold on;
+subplot(224);cla;hold on;
 serco = 1:1:numel(DMR.CO); % selected range CO
-servp = 1:2:numel(DMR.Vp);% selected range Vp
+servp = 3:3:numel(DMR.Vp);% selected range Vp
 plot(DMR.CO(serco), DMR.pVascND(serco, servp), 'o-');
+set(gca, 'ColorOrderIndex', 1)
 plot(DMR.CO(serco), DMR.Pv(serco, servp), 'x--');
 xlabel('whole organ CO (L/min)');ylabel('pO2 (mmHg)')
 title('Distributed alveoli with normal distribution of flow at Vp rates')
 legend(string([DMR.Vp(servp) DMR.Vp(servp)]), 'NumColumns',2)
 % legend('Single compartment', 'Distributed')
 % legend('SD = 0.001', 'SD = 0.1','SD = 1');
+saveas(gcf, sprintf("figures/DistributedModelD_VQ_SD_%1.1e.fig", SD));
+saveas(gcf, sprintf("figures/DistributedModelD_VQ_SD_%1.1e.png", SD));
