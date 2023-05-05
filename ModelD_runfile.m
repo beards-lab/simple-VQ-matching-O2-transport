@@ -1,4 +1,4 @@
-clear; close all; clc;
+% clear; close all; clc;
 % This script solves Model D and saves results into a .mat file
 
 %%% parameters
@@ -41,6 +41,10 @@ v  = 0:de:70;
 [Q,V] = meshgrid(q,v);
 np = length(q); %number of points for air and blood flow to use
 
+tic
+[pvasc,palv] = modelD_SS_relaxation(N,par,P,C,5,5); %loop through q and v and store fixed points
+toc
+%%
 %%% solve for fixed points
 pvasc = zeros(np); %preallocate matricies to store fixed points
 palv = zeros(np);

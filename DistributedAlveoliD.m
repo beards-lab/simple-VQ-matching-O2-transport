@@ -194,9 +194,9 @@ subplot(232); cla;hold on;
 % plot(DMR.snap.Pds,1:numel(DMR.snap.Qds), 'x'); 
 histogram(DMR.snap.Pds, N/10);
 title(['Partial pressure in distributed alveoli, Pa = ' num2str(round(DMR.snap.Pvs, 2))]);
-plot([DMR.snap.PvNds DMR.snap.PvNds], [0 max(ylim)], 'k:')
+plot([DMR.snap.PvNds DMR.snap.PvNds], [0 max(ylim)], 'c:', 'LineWidth',1.5)
 plot([DMR.snap.Pvs DMR.snap.Pvs], [0 max(ylim)], 'r--')
-legend('Capillary pO2', '1 comp pO2', 'dist venous pO2')
+legend('Capillary pO2', '1 comp pO2', 'dist venous pO2', 'Location','northwest')
 xlabel('P_{O2}');ylabel('Count in category');
 
 subplot(233); cla;hold on;
@@ -208,6 +208,7 @@ contour(X, Y, DMR.Pv', '-', 'ShowText','on', 'LineWidth',1);
 xlabel('CO L/min');
 ylabel('V (L/min)');
 zlabel('P_O2 (mmHg)');
+legend('1 comp', 'Distributed')
 colorbar
 % view(2)
 
