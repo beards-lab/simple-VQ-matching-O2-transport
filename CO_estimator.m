@@ -159,16 +159,17 @@ plot(0:70,0:70,'k--','linewidth',2)
 xlabel('Cardiac Output (L/min)')
 ylabel('Ventilation (L/min)')
 set(gca,'fontsize',18)
-xlim([8 18])
+xlim([5 20])
+ylim([5, 70])
 
-figure;
-plot(CO_data,V_data,'ko','linewidth',2,'markersize',10)
-hold on
-plot(0:70,0:70,'k--','linewidth',2)
-xlabel('Cardiac Output (L/min)')
-ylabel('Ventilation (L/min)')
-set(gca,'fontsize',18)
-xlim([8 18])
+% figure;
+% plot(CO_data,V_data,'ko','linewidth',2,'markersize',10)
+% hold on
+% plot(0:70,0:70,'k--','linewidth',2)
+% xlabel('Cardiac Output (L/min)')
+% ylabel('Ventilation (L/min)')
+% set(gca,'fontsize',18)
+% xlim([8 18])
 
 % saving all of our hard work into a .mat file to use in other scripts
 save('ExerciseData.mat','PO2_data','CO_data','V_data','DATA')
