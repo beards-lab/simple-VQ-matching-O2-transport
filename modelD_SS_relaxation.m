@@ -9,6 +9,7 @@ Pin   = par(3);
 alpha = par(4);
 beta  = par(5);
 l     = par(6);
+maxIter = 10000;
 
 %%% set up stuff
 dx = l/N; %spatial step size
@@ -18,7 +19,8 @@ Cvi = Cin*ones(N,1); %initialize O2 conc along the capillary
 %%% while loop
 EPS   = 1; %arbitrary initialization of error
 EPSv  = EPS; %the eventual vector to store the error
-while EPS > 1e-12 %iterating to update? not sure how many iterations will be needed
+for i = 1:maxIter 
+    %iterating to update? not sure how many iterations will be needed
     clear Pvi Pa Pvm dCv Cvt EPS
     Pvi = interp1(C,P,Cvi); %O2 pp along the capillary
     Pvm = mean(Pvi); %average O2 pp along the capillary
@@ -33,6 +35,15 @@ while EPS > 1e-12 %iterating to update? not sure how many iterations will be nee
     EPSv = [EPSv EPS]; %stack error into a vector
     
     Cvi = Cvt; %update Cvi vector
+
+    if EPS < 1e-12 || isnan(EPS)
+        % either we are under tolerance or in deep nans, aborting
+        break;
+    end
+end
+if i == maxIter
+    % iteration not successful
+    Cvi(end) = NaN;
 end
 EPSv(1) = []; %delete first entry, as this is just 1 and not a real result
 
