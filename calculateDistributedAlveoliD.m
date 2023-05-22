@@ -44,20 +44,20 @@ else
     Pd = Pd/sum(Pd); % Sum of Pd = 1 - just in case here
 end
     
-% c(isnan(c)) = 0; p(isnan(p)) = 0;
+%% c(isnan(c)) = 0; p(isnan(p)) = 0;
 % Peld = interp1(HbDisC, HbDisP,c , "linear"); % partial pressure per ventilation element
 Cvd = (c.*qrs.*Pd); % concentration venous distributed, weighted by "probability distribution"
 % Pvd = interp1(HbDisC, HbDisP,Cvd , "linear"); 
 cv = sum(Cvd)/sum(qrs); % weighted average of concentrations by flow
 % just another mean of calculation of the previous
-Cv = sum(c.*qrs.*(Pd*1/N))/sum(qrs); 
-Cv = sum(c.*qrs.*Pd)/mean(qrs)
+cv = sum(c.*qrs.*(Pd*1/N))/sum(qrs); 
+cv = sum(c.*qrs.*Pd)/sum(qrs.*Pd);
 pv = interp1(HbDisC, HbDisP,cv , "linear"); % Pulmonary venous distributed sum
 
 fprintf('At Q = %2.1f and Vp  = %2.1f, pO2_{dist} = %2.1f (single comp. = %2.1f), with %1.0f NaNs in %2.0f ms \n', ...
     sum(qrs), sum(vrs), pv, pv1, sn, t*1000);
 
-%% plot that
+% plot that
 
 % distribution of concentrations
 % figure(3);clf;
@@ -72,6 +72,7 @@ plot(vrs, qrs, 'o');
 plot(vrsNans, qrsNans, 'rx');
 title(sprintf('Flow (%1.1f L/min) to ventilation (%1.1f L/min) relation', sum(qrs), sum(vrs)));
 ylabel('Perfusion L/min');xlabel('Ventilation L/min')
+xl = xlim;
 
 % subplot(221);
 % plot(qrs, vrs, 'x');title(fprintf('Flow (%1.1f L/min) to ventilation (%1.1f L/min) distribution', sum(qrs), sum(vrs)));
@@ -79,15 +80,16 @@ ylabel('Perfusion L/min');xlabel('Ventilation L/min')
 
 % distribution of concentrations
 subplot(223);hold on;
-plot(vrs, c, '*-');title(sprintf('Weighted concentration, total: %0.2f', cv));
+plot(vrs, c, '*-');title(sprintf('Weighted concentration, total: %0.2f (single %0.2f, %0.2f%%)', cv, cv1, 100 - cv1/cv*100));
 plot(vrsNans, max(c)*ones(size(vrsNans)), '*-');
-plot(xlim, [cv1 cv1], 'r--')
-plot(xlim, [cv cv], 'c:', 'LineWidth',1.5)
+plot(xl, [cv1 cv1], 'r--')
+plot(xl, [cv cv], 'c:', 'LineWidth',1.5)
 legend('Capillary cO2', '1 comp cO2', 'dist venous cO2', 'Location','northwest')
+xlim(xl);
 
 % distribution of partial pressure
 subplot(224);hold on;
-plot(vrs, p, '*-');title(sprintf('Weighted partial pressures, total: %0.2f', pv));
+plot(vrs, p, '*-');title(sprintf('Weighted partial pressures, total: %0.2f  (single %0.2f, %0.2f%%)', pv, pv1, 100 - pv1/pv*100));
 plot(vrsNans, max(p)*ones(size(vrsNans)), '*-');
 plot(xlim, [pv1 pv1], 'r--')
 plot(xlim, [pv pv], 'c:', 'LineWidth',1.5)

@@ -1,4 +1,4 @@
-% clear;close all;
+clear;close all;
 %% Test Hb dissociation look up table
 alpha = 1.3e-6*1e3;  % O2 solubility  in water/plasma(mM/mmHg)
 CHb   = 0.021*1e3;   % Hb binding site conc (mmol/L of RBC's)
@@ -21,18 +21,19 @@ HbDisC = HbLookUp.LOOK.Clookup;
 % plot(HbDisP, HbDisC, HbDisP, Ceq, '--', Pvdist, Cx, 'x-', 'Linewidth', 2);
 
 %% Prepare pseudo-random continuous distribution
-N = 20;
-SD = 5e-1;
+N = 10;
+SD = 1;
+% SD = 2.5e-1;
 
-N = 20;
-SD = 1e-1;
+% N = 20;
+% SD = 1e-1;
 
-in = linspace(0.05, 2, N);
+in = linspace(0.0, 2, N);
 % normal probability distribution density
 bell = normpdf(in, 1, SD);
 
 % cut off low probabilities for compuational reasons
-trashold = 0.000001;
+trashold = 1e-3;
 in = in(bell>trashold);
 bell = bell(bell>trashold);
 N = numel(bell);
@@ -74,21 +75,21 @@ Qt = 0.05;Vpt = 0.3;
 par(6) = 1;
 par(1) = D;
 [Pv,Pa,Cvi,Pvi,EPSv,dx] = modelD_SS_relaxation(NN,par,HbDisP,HbDisC,5,5);
-
-fprintf('At Q = %2.2f and Vp  = %2.2f, pO2_{dist} = %2.1f (alv. = %2.1f), in %2.0f ms \n', Qt, Vpt, Pv, Pa, t*1000);
-VQset = 0:0.01:0.2;
-Cvid = zeros(numel(VQset), 1);
-for i = 1:numel(VQset)
-    fprintf('Jedu %2.0f %% \n' , i/numel(VQset)*100);
-    [~,~,C] = modelD_SS_relaxation(NN,par,HbDisP,HbDisC,VQset(i),VQset(i));
-    Cvid(i) = C(end);
-end
-%% 
-cla;hold on;
-plot(VQset, Cvid, 'o-');
-yl = ylim;
-plot(VQset(isnan(Cvid)), yl(1) + (yl(2)-yl(1))*0.9*ones(size(find(isnan(Cvid)))), 'o-');
 t = toc;
+fprintf('At Q = %2.2f and Vp  = %2.2f, pO2_{dist} = %2.1f (alv. = %2.1f), in %2.0f ms \n', Qt, Vpt, Pv, Pa, t*1000);
+% VQset = 0:0.01:0.2;
+% Cvid = zeros(numel(VQset), 1);
+% for i = 1:numel(VQset)
+%     fprintf('Jedu %2.0f %% \n' , i/numel(VQset)*100);
+%     [~,~,C] = modelD_SS_relaxation(NN,par,HbDisP,HbDisC,VQset(i),VQset(i));
+%     Cvid(i) = C(end);
+% end
+% %
+% cla;hold on;
+% plot(VQset, Cvid, 'o-');
+% yl = ylim;
+% plot(VQset(isnan(Cvid)), yl(1) + (yl(2)-yl(1))*0.9*ones(size(find(isnan(Cvid)))), 'o-');
+% t = toc;
 % fprintf('Cvi %1.3f, CviSum %1.3f \n', Cvi(end), Csum);
 
 
@@ -99,10 +100,21 @@ V = 5;
 CO = 5;
 
 vrs = V/N * Vdist; % pseudorandom ventilation set
-% qrs = CO/N .* ones(N, 1); % flow - start simple unmatched
+% qrs = CO/N .* ones(1, N); % flow - start simple unmatched
 qrs = vrs; % flow matches ventilation 1:1
+% Best fit Exponential Curve Fit (exp2)
+% a    = 2.3063; b    = 0.1459;  c    = 0.0032;   d    = 0.5296;
+% VfunCo = @(CO) a*exp(b*CO) + c*exp(d*CO);
+% a = 13.3119; b = 0.0044;c = -18.0414; d = -0.1465;
+% COfunV = @(V) a*exp(b*V) + c*exp(d*V);
+% qrs = COfunV(vrs*V)/V;
+
+qrs = CO/N * Vdist;
+vrs = V/N .* ones(1, N);
+
 % qrs as a function of q
-A = struct();
+% A = struct();
+figure(1)
 A = calculateDistributedAlveoliD(par, vrs, qrs, Pd, true);
 
 %% save results

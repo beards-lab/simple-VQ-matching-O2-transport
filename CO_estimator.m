@@ -171,6 +171,21 @@ ylim([5, 70])
 % set(gca,'fontsize',18)
 % xlim([8 18])
 
+%%
+id = 5:10; % IDentity linear relation assumed until our data begin
+CO_fit = [id'; CO_data];
+V_fit = [id'; V_data];
+
+% Best fit Exponential Curve Fit (exp2)
+a    = 2.3063; 
+b    = 0.1459;  
+c    = 0.0032;   
+d    = 0.5296;
+VfunCo = @(CO) a*exp(b*CO) + c*exp(d*CO);
+CO_in = 5:20;
+plot(CO_in,VfunCo(CO_in),'b--','linewidth',2)
+%%
+
 % saving all of our hard work into a .mat file to use in other scripts
 save('ExerciseData.mat','PO2_data','CO_data','V_data','DATA')
 
