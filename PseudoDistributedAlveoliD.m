@@ -109,8 +109,9 @@ qrs = vrs; % flow matches ventilation 1:1
 % COfunV = @(V) a*exp(b*V) + c*exp(d*V);
 % qrs = COfunV(vrs*V)/V;
 
-qrs = CO/N * Vdist;
-vrs = V/N .* ones(1, N);
+% switching the behaviour
+% qrs = CO/N * Vdist;
+% vrs = V/N .* ones(1, N);
 
 % qrs as a function of q
 % A = struct();
