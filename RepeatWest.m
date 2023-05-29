@@ -15,7 +15,7 @@ vrs = westData.Va;
 
 %% parameters
 D     = 285;      %apparent diffusion (L/min)
-Pair  = 150;    %atmospheric oxygen partial pressure (mmHg) - 164?
+Pair  = 134;    %atmospheric oxygen partial pressure (mmHg) - 164?
 Pin   = 45;     %mixed venous oxygen partial pressure - pulmonary inlet (mmHg)
 Vvasc = 1;      %volume of vascular space (ml)
 Valv  = 1;      %alveolar volume (ml)
@@ -27,11 +27,11 @@ beta  = 16800*1e-3; % O2 solubility in air (mmHg/mM)
 load('ModelD_optimization_v2_results.mat','JD','DD')
 [~, jDpi] = min(JD); DDp = DD(jDpi);D = DDp;
 par = [D Pair Pin alpha beta l];
-%%
+%
 figure(1);clf;
 
 % tune down the diffusion
-D = 185;
+D = 385;
 
 [pv, cv, p, c, validIds] = calculateDistributedAlveoliD(par, vrs, qrs, Vols, D.*Vols/100, 1);
 %
@@ -57,15 +57,15 @@ plot(qrs, westData.cO2, 'o-');
 xl = xlim();
 cmart = interp1(HbDisP,HbDisC, 97, "linear"); % c mixed arterial from West's pO2
 plot(xl, [cmart cmart], 'm--');
-legend('Capillary cO2', '1 comp cO2', 'dist venous cO2', 'data West per chunk', 'West total', 'Location','northwest')
+legend('Capillary cO2', '1 comp cO2', 'dist venous cO2', 'data West per chunk', 'West total', 'Location','southwest')
 
 % distribution of partial pressure
 subplot(224);hold on;
 plot(qrs, westData.PO2, 'o-');
 xl = xlim();
 plot(xl, [97 97], 'm--');
-legend('Capillary pO2', '1 comp pO2', 'dist venous pO2', 'data West p02', 'West total pO2', 'Location','northwest')
-%% PLot over our optimal VQ matching - this moght not really work!
+legend('Capillary pO2', '1 comp pO2', 'dist venous pO2', 'data West p02', 'West total pO2', 'Location','northeast')
+% PLot over our optimal VQ matching - this moght not really work!
 % we compare exercise matching with gravitational matching
 
 % Best fit Exponential Curve Fit (exp2)
