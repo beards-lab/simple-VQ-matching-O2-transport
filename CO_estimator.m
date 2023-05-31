@@ -99,9 +99,9 @@ par = [a b c d];
 subplot(2,2,3)
 plot(wp1,CO_W(wp1,4.5,par),'linewidth',2)
 hold on
-plot(wp1,CO_W(wp1,5.5,par),'linewidth',2)
+plot(wp1,CO_W(wp1,1,par),'linewidth',2)
 hold on
-plot(wp1,CO_W(wp1,8,par),'linewidth',2)
+plot(wp1,CO_W(wp1,3,par),'linewidth',2)
 xlabel('Work (Watts)')
 ylabel('Cardiac Output (L/min)')
 set(gca,'fontsize',18)
@@ -170,6 +170,19 @@ ylim([5, 70])
 % ylabel('Ventilation (L/min)')
 % set(gca,'fontsize',18)
 % xlim([8 18])
+%% Data from Davis 1980 https://link.springer.com/article/10.1007/BF00421087
+Davis1980 = readtable('Data/Davis1980.csv')
+W = Davis1980.Var1(2:end); % work rate in W, first is resting
+V = Davis1980.Var2(2:end).*Davis1980.Var3(2:end); % Tidal volume * breath rate
+a = 0.105;
+b = 5.72;
+
+D_CO = CO_W(W,4.5,par);
+clf;plot(D_CO, V, 'd-');
+D_CO = CO_W(0,1,par);
+xlabel('CO');
+ylabel('V');
+title('V/Q from Davis 1980, converted using work and VO_{2max} = 4.5')
 
 %%
 id = 5:10; % IDentity linear relation assumed until our data begin

@@ -38,8 +38,8 @@ in = in(bell>trashold);
 bell = bell(bell>trashold);
 N = numel(bell);
 
-Vdist = in/ mean(in); % ventilation sweep with mean of 1
-Pd = bell / mean(bell); % probability distribution with mean of one
+Prng = in/ mean(in); % Probability sweep with mean of 1
+Pd = bell / sum(bell); % probability distribution with sum of one
 % sum
 
 % plot(Qdist, Qpd, Qdist, bell2)
@@ -47,7 +47,7 @@ Pd = bell / mean(bell); % probability distribution with mean of one
 % plot(Pd, '*');
 
 figure(1);clf;subplot(221);
-plot(Vdist, Pd, '*-');title('Probability distribution with mean = 1');
+plot(Prng, Pd, '*-');title('Probability distribution with mean = 1');
 % bar(vrs, Pd);title(sprintf('Distribution of ventilation among %d elements', N));
 % xlabel('Ventilated elements (L/)');
 % 
@@ -56,17 +56,19 @@ plot(Vdist, Pd, '*-');title('Probability distribution with mean = 1');
 % bar(vrs, qrs);title('Distribution of flow');
 
 %% parameters
-D     = 285;      %apparent diffusion (L/min)
+%load optimized diffusion (D) parameter
+load('ModelD_optimization_v2_results.mat','JD','DD')
+[~, jDpi] = min(JD); DDp = DD(jDpi);D = DDp;
+
+M = 1;
+D     = 285/M;      %apparent diffusion (L/min)
 Pair  = 150;    %atmospheric oxygen partial pressure (mmHg)
 Pin   = 45;     %mixed venous oxygen partial pressure - pulmonary inlet (mmHg)
 Vvasc = 1;      %volume of vascular space (ml)
 Valv  = 1;      %alveolar volume (ml)
 l     = 1; %length of capillary
 
-%load optimized diffusion (D) parameter
-load('ModelD_optimization_v2_results.mat','JD','DD')
-[~, jDpi] = min(JD); DDp = DD(jDpi);D = DDp;
-par = [D Pair Pin alpha beta l];
+par = [D Pair Pin alpha beta l M];
 
 %% Run ModelD eval - test the distribution
 NN = 500;
@@ -99,7 +101,7 @@ fprintf('At Q = %2.2f and Vp  = %2.2f, pO2_{dist} = %2.1f (alv. = %2.1f), in %2.
 V = 5;
 CO = 5;
 
-vrs = V/N * Vdist; % pseudorandom ventilation set
+vrs = V/N * Prng; % pseudorandom ventilation set
 % qrs = CO/N .* ones(1, N); % flow - start simple unmatched
 qrs = vrs; % flow matches ventilation 1:1
 % Best fit Exponential Curve Fit (exp2)
