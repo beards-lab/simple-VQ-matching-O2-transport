@@ -22,7 +22,7 @@ vrs = westData.Va;
 
 M = .445 + .395; % Mean lung weight in young normal adult man (kg)
 D     = 385/M;      %apparent diffusion (L/min/kg)
-D     = 285/M;      %apparent diffusion (L/min/kg)
+% D     = 285/M;      %apparent diffusion (L/min/kg)
 Pair  = 134;    %atmospheric oxygen partial pressure (mmHg) - 164?
 % Pair  = 150;    %atmospheric oxygen partial pressure (mmHg) - 164?
 Pin   = 45;     %mixed venous oxygen partial pressure - pulmonary inlet (mmHg)
@@ -40,8 +40,10 @@ figure(1);clf;
 % tune down the diffusion
 % D = 385;
 Ms = M*Vols/100;
+vu = vrs./Ms; % ventilation per mass
+qu = qrs./Ms; % perfusion per mass
 %%
-[pv, cv, p, c, validIds] = calculateDistributedAlveoliD(par, vrs./Ms, qrs./Ms, Ms, D, 1);
+[pv, cv, p, c_i, validIds] = calculateDistributedAlveoliD(par, vu, qu, Ms, D, 1);
 %
 % subplot(231);hold on;
 % plot(qrs, Vols, 'o');
@@ -82,9 +84,9 @@ legend('Capillary pO2', '1 comp pO2', 'dist venous pO2', 'data West p02', 'West 
 % Best fit Exponential Curve Fit (exp2)
 a    = 2.3063; 
 b    = 0.1459;  
-c    = 0.0032;   
+c_i    = 0.0032;   
 d    = 0.5296;
-VfunCo = @(CO) a*exp(b*CO) + c*exp(d*CO);
+VfunCo = @(CO) a*exp(b*CO) + c_i*exp(d*CO);
 
 % scale to normal size
 Qs = qrs*M./Ms;
@@ -99,13 +101,51 @@ xlabel('Perfusion blood');
 ylabel('Perfusion air');
 legend('West', 'Optimal VQ')
 
-%% plot
+%% Match ventilation
 
-figure(2);
-chs = 1:numel(Vols);
-bar(chs, Vols/100);
-xlabel('# Chunk')
-figure(3);
-perf = qrs./Vols*100;
-bar(chs, perf)
-xlabel('# Chunk')
+pO2_target = 100;
+NN = 100;
+HbLookUp = load('Lookup.mat'); %outputs Hb dissociation curve lookup table
+HbDisP = HbLookUp.LOOK.Plookup;
+HbDisC = HbLookUp.LOOK.Clookup;
+vu_i = zeros(size(qu));
+c_i = zeros(size(qu));
+
+CO0 = sum(qu.*Ms);
+% CO_t
+
+for i = 1:length(qu) % iterate submodel flows
+    % i = 1
+    sig = 1; % optimal VQ, initial guess is 1:1
+    step = 0.5;
+    for j = 1:11
+    vu_i(i) = sig*qu(i); % ventilation iteration
+    [~,~, Cvi, Pvi] = modelD_SS_relaxation(NN,par,HbDisP,HbDisC,vu_i(i),qu(i)); %loop through q and v and store fixed points
+    E = Pvi(end) - pO2_target;
+    c_i(i) = Cvi(end);
+    if E < 0
+        % increase
+        sig = sig + step;
+        step = step/2;
+    else % decrease
+        sig = sig - step;
+        step = step/2;
+    end
+    % vu_i = vu_i - max(min(E, vu_i/3), -vu_i/3);
+    
+    end
+
+    fprintf('For qu %1.2f the vu is found to be %1.2f (Err %1.3f) \n', qu(i), vu(i), E);
+  
+    % p(i) = Pvi(end); % pulmonary end-capillary pO2
+end
+
+cv = sum(c_i.*qu.*Ms)/sum(qu.*Ms);
+% cv = sum(c.*q./Ms)/sum(q./Ms);
+pv = interp1(HbDisC, HbDisP,cv , "linear"); % Pulmonary venous distributed sum
+
+
+%% plot that
+figure(2); clf; hold on;
+plot(qu, vu_i, 'd-');
+plot([0 max(qu(end), vu(end))], [0 max(qu(end), vu(end))], 'k--');
