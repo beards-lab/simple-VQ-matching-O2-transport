@@ -1,4 +1,13 @@
-function [pv, cv, p, c, validIds] = calculateDistributedAlveoliD(par, v, q, Ms, D, ExcludeNaNs)
+function [pv, cv, p, c, validIds, pv1] = calculateDistributedAlveoliD(par, v, q, Ms, D, ExcludeNaNs, plotThat)
+if any(v < 0) 
+    pv = 0;
+    cv = 0;
+    p = zeros(size(q));
+    c = zeros(size(q));
+    validIds = zeros(size(q));
+    return;
+end
+
 % Calculates model values for ventilation VRS and perfusion QRS vectors.
 % Usage:
 %   [pv, cv, p, c, validIds] = calculateDistributedAlveoliD(par, vrs, qrs, Pd, Ds, ExcludeNaNs)
@@ -54,11 +63,11 @@ if ExcludeNaNs
     q = q(validIds);
     v = v(validIds);
     Ms = Ms(validIds);
-    Ms = Ms/sum(Ms); % Sum of Pd = 1
+    % Ms = Ms/sum(Ms); % Sum of Pd = 1
 else
     validIds = ones(size(c));
     sn = 0; qrsNans = [];vrsNans = [];PdNans = [];
-    Ms = Ms/sum(Ms); % Sum of Pd = 1 - just in case here
+    % Ms = Ms/sum(Ms); % Sum of Pd = 1 - just in case here
 end
     
 %% c(isnan(c)) = 0; p(isnan(p)) = 0;
@@ -72,15 +81,20 @@ cv = sum(c.*q.*Ms)/sum(q.*Ms);
 % cv = sum(c.*q./Ms)/sum(q./Ms);
 pv = interp1(HbDisC, HbDisP,cv , "linear"); % Pulmonary venous distributed sum
 
-fprintf('At Q = %2.1f and Vp  = %2.1f, pO2_{dist} = %2.1f (single comp. = %2.1f), with %1.0f NaNs in %2.0f ms \n', ...
-    sum(q), sum(v), pv, pv1, sn, t*1000);
+fprintf('At Q = %2.1f and Vp  = %2.1f, pO2_{dist} = %2.1f (single comp. = %2.1f), with %1.0f NaNs in %4.0f ms \n', ...
+    sum(q.*Ms), sum(v.*Ms), pv, pv1, sn, t*1000);
 
 %% plot that
+if ~ plotThat
+    return;
+end
+
+co = colororder;
 
 % distribution of concentrations
 % figure(3);clf;
 % bar(vrs, c);title('Distribution of concentration (raw)');
-clf;
+% clf;
 % PdPrc = Ms/sum(Ms)*100;
 subplot(241);
 xn = 1:numel(Ms);
@@ -91,7 +105,7 @@ xlabel('Element # ');ylabel('Compartment size (g)')
 % xl = xlim;
 
 subplot(242);hold on;
-bar(xn, q);
+plot(xn, q, 'd--', 'MarkerSize', 12, 'LineWidth',2);
 xlabel('Element # ');ylabel('Compartment flow (mL/min/kg)')
 
 % plot(vrsNans, qrsNans, 'rx');
@@ -99,36 +113,39 @@ xlabel('Element # ');ylabel('Compartment flow (mL/min/kg)')
 % xlabel('Perfusion L/min');ylabel('Ventilation L/min');
 
 subplot(243);hold on;
-bar(xn, v);
+plot(xn, v, 'v--', 'MarkerSize', 12, 'LineWidth',2);
 xlabel('Element # ');ylabel('Compartment ventilation (mL/min/kg)')
 
 subplot(244);hold on;
-plot(q, v, 'd-')
-plot(vrsNans*1000, qrsNans*1000, 'rx');
-title(sprintf('Flow (Σ=%1.1f L/min) to ventilation (Σ=%1.1f L/min) relation', sum(q), sum(v)));
+plot(q, v, '^--', 'MarkerSize', 12, 'LineWidth',2)
+text(q(1)+0.1, v(1)-0.1, sprintf('p_{O2} = %0.1f mmHg', pv));
+plot(vrsNans, qrsNans, 'rx');
+title(sprintf('Flow (Σ=%1.1f L/min) to ventilation (Σ=%1.1f L/min) relation', sum(q.*Ms), sum(v.*Ms)));
 xlabel('Perfusion L/min/kg');ylabel('Ventilation mL/min/kg');
 
 % % bar(vrs, Pd);title('Pseudodistribution of ventilated elements');
 % plot(vrs, PdPrc, 'v');title('Pseudodistribution of ventilated elements');
 % xlabel('Ventilation L/min');ylabel('Chunk size (%)');
 
-
 % % distribution of concentrations
 subplot(223);hold on;
-plot(xn, c, 'x-');title(sprintf('Weighted concentration, total: %0.2f (single %0.2f, %0.2f%%)', cv, cv1, 100 - cv1/cv*100));
-plot(xn(~validIds), max(c)*ones(size(vrsNans)), '*-');
-plot(xl, [cv1 cv1], 'r--')
-plot(xl, [cv cv], 'c:', 'LineWidth',1.5)
+plot(xn, c, '<-', 'MarkerSize', 10, 'LineWidth',2);title(sprintf('Weighted concentration, total: %0.2f (single %0.2f, %0.2f%%)', cv, cv1, 100 - cv1/cv*100));
+plot(xn(~validIds), max(c)*ones(size(vrsNans)), 'o-', 'MarkerSize', 12, 'LineWidth',3, 'Color',co(max(gca().ColorOrderIndex - 1, 1), :));
+% plot(xl, [cv cv], 'c:', 'LineWidth',3,'color', co(max(gca().ColorOrderIndex - 1, 1), :));
+% plot(xl, [cv1 cv1], 'r--', 'LineWidth',2)
 legend('Capillary cO2', '1 comp cO2', 'dist venous cO2', 'Location','northwest')
 % xlim(xl);
+xlabel('Element #');
 
 % distribution of partial pressure
 subplot(224);hold on;
-plot(xn, p, 'x-');title(sprintf('Weighted partial pressures, total: %0.2f  (single %0.2f, %0.2f%%)', pv, pv1, 100 - pv1/pv*100));
-plot(xn(~validIds), max(p)*ones(size(vrsNans)), '*-');
-plot(xl, [pv1 pv1], 'r--')
-plot(xl, [pv pv], 'c:', 'LineWidth',1.5)
+plot(xn, p, 's-', 'MarkerSize', 12, 'LineWidth',2);
+% plot(xn(~validIds), max(p)*ones(size(vrsNans)), 'o-', 'MarkerSize', 12, 'LineWidth',3, 'Color',co(max(gca().ColorOrderIndex - 1, 1), :));
+% plot(xl, [pv pv], ':', 'MarkerSize', 12, 'LineWidth',3, 'Color',co(max(gca().ColorOrderIndex - 1, 1), :));
+% plot(xl, [pv1 pv1], 'r--', 'MarkerSize', 12, 'LineWidth',2)
+title(sprintf('Weighted partial pressures, total: %0.2f  (single %0.2f, %0.2f%%)', pv, pv1, 100 - pv1/pv*100));
 legend('Capillary pO2', '1 comp pO2', 'dist venous pO2', 'Location','northwest')
+xlabel('Element # ');
 %%
 % Pdperc = Pd/sum(Pd)*100; % probability distribution in percent
 % figure(2);clf

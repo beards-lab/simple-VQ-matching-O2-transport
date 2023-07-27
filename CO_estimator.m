@@ -1,10 +1,9 @@
-clear; close all; clc;
 % This script uses data/information taken from a few sources to convert
 % work rate to cardiac ouput. The ultimate purpose here is to prepare a
 % data set from a CPET study to compare to our suite of simple pulmonary
 % oxygen transport models.
-
-%%% empirical function of Cardiac Ouput as a function of work rate - from Stringer 1997
+clear; close all; clc;
+%% empirical function of Cardiac Ouput as a function of work rate - from Stringer 1997
 % Reference --> Stringer WW, Hansen JE, Wasserman K. Cardiac output estimated noninvasively from oxygen uptake during exercise. Journal of Applied Physiology. 1997 Mar 1;82(3):908-12.
 a = 0.105;
 b = 5.72;
@@ -19,7 +18,7 @@ xlabel('%V_{O2,Max}')
 ylabel('Cardiac Output (L/min)')
 set(gca,'fontsize',18)
 
-%%% Data from Riley 2000 - VO2 (L/min) as a funtion of work (Watts)
+%% Data from Riley 2000 - VO2 (L/min) as a funtion of work (Watts)
 % Reference --> Riley MS, Pórszász J, Engelen MP, Brundage BH, Wasserman K. Gas exchange responses to continuous incremental cycle ergometry exercise in primary pulmonary hypertension in humans. European journal of applied physiology. 2000 Sep;83(1):63-70.
 DATA1 = [10.176991150442483, 0.5978636615044246
 7.227138643067853, 0.8575716721976401
@@ -94,7 +93,7 @@ xlabel('Work (Watts)')
 ylabel('V_{O2} (L/min)')
 set(gca,'fontsize',18)
 
-%%% plotting Cardiac Ouput as a function of work rate by combinining info from Riley et al and Stringer et al.
+%% plotting Cardiac Ouput as a function of work rate by combinining info from Riley et al and Stringer et al.
 par = [a b c d];
 subplot(2,2,3)
 plot(wp1,CO_W(wp1,4.5,par),'linewidth',2)
@@ -107,7 +106,7 @@ ylabel('Cardiac Output (L/min)')
 set(gca,'fontsize',18)
 legend('V_{O2,Max} = 4.5', 'V_{O2,Max} = 5.5', 'V_{O2,Max} = 8','location','northwest')
 
-%%% loading exercise data from ODonnell 2017
+%% loading exercise data from ODonnell 2017
 % Reference --> O'Donnell DE, Elbehairy AF, Berton DC, Domnik NJ, Neder JA. Advances in the evaluation of respiratory pathophysiology during exercise in chronic lung diseases. Frontiers in physiology. 2017 Feb 22;8:82.
 DATA2 = [0, 9.0032154340836;
 10, 9.0032154340836;
@@ -177,13 +176,33 @@ V = Davis1980.Var2(2:end).*Davis1980.Var3(2:end); % Tidal volume * breath rate
 a = 0.105;
 b = 5.72;
 
-D_CO = CO_W(W,4.5,par);
-clf;plot(D_CO, V, 'd-');
+D_CO = CO_W(W,2.5,par);
+clf;hold on;
+plot(D_CO, V, 'd-');
 D_CO = CO_W(0,1,par);
 xlabel('CO');
 ylabel('V');
 title('V/Q from Davis 1980, converted using work and VO_{2max} = 4.5')
 
+%% Data from Schaffartzik 1992
+G1 = readtable('Data/SchaffartzigFig4G1.csv');
+G2 = readtable('Data/SchaffartzigFig4G2.csv');
+
+G1.Properties.VariableNames = {'Work', 'Vdot', 'CI'};
+G2.Properties.VariableNames = {'Work', 'Vdot', 'CI'};
+
+% clf;hold on;
+normalBSA = 1.9;
+plot(G1.CI(1:3)*normalBSA, G1.Vdot(1:3), 'd', 'MarkerSize', 10);
+plot(G2.CI(1:3)*normalBSA, G2.Vdot(1:3), 'd', 'MarkerSize', 10);
+plot(G1.CI(4:end)*normalBSA, G1.Vdot(4:end), 's', 'MarkerSize', 6);
+plot(G2.CI(4:end)*normalBSA, G2.Vdot(4:end), 's', 'MarkerSize', 6);
+
+% identity
+xl = xlim();
+yl = ylim();
+xy = [ min(yl(1), xl(1))*[1 1]; [1 1]*min(yl(2), xl(2))];
+plot(xy(:, 1), xy(:, 2), 'k--')
 %%
 id = 5:10; % IDentity linear relation assumed until our data begin
 CO_fit = [id'; CO_data];
